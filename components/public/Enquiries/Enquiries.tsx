@@ -1,4 +1,5 @@
 import styles from './Enquiries.module.css';
+import qr_code from '../../../public/qr_code.jpeg'
 
 export default function Enquiries() {
   return (
@@ -50,7 +51,7 @@ export default function Enquiries() {
         <div className={styles.qrWrap}>
           <div className={styles.qrFrame}>
             {/* Place QR code image at /public/assets/qr.png */}
-            <img src="/assets/qr.png" alt="Scan to Enrol" width={200} height={200} />
+            <img src={qr_code.src} alt="Scan to Enrol" width={200} height={200} />
           </div>
           <div className={styles.qrLabel}>
             Scan to Enrol
