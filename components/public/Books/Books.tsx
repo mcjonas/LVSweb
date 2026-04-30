@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import styles from './Books.module.css';
 import book1 from "../../../public/book1.jpeg"
 import book2 from "../../../public/book2.jpeg"
@@ -43,7 +44,13 @@ export default function Books() {
         {BOOKS.map(b => (
           <div key={b.num} className={`${styles.card} fade-in`}>
             <div className={styles.coverWrap}>
-              <img src={b.img} alt={b.title} />
+              <Image 
+                src={b.img} 
+                alt={b.title} 
+                fill 
+                sizes="(max-width: 768px) 50vw, 25vw"
+                className={styles.coverImage}
+              />
               <div className={styles.overlay}>
                 <span>View Book</span>
               </div>

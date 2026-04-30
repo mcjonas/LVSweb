@@ -27,23 +27,20 @@
 .coverWrap {
   position: relative;
   width: 100%;
+  aspect-ratio: 3 / 4.2;
   box-shadow: 0 20px 50px rgba(45,27,78,0.25);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 1.4rem;
 }
 
-.coverWrap img {
-  width: 100%;
-  display: block;
-  border-radius: 4px;
-  transition: transform 0.4s;
-  min-height: 260px;
+.coverImage {
   object-fit: cover;
+  transition: transform 0.4s;
   background: var(--blush);
 }
 
-.card:hover .coverWrap img { transform: scale(1.03); }
+.card:hover .coverImage { transform: scale(1.03); }
 
 .overlay {
   position: absolute;
