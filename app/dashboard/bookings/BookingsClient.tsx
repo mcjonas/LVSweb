@@ -8,7 +8,7 @@ export default function BookingsClient({ initialBookings }: { initialBookings: B
   const [filterCourse, setFilterCourse] = useState('');
   const [filterPayment, setFilterPayment] = useState('');
 
-  const courses = Array.from(new Set(initialBookings.map(b => b.course)));
+  const courses = Array.from(new Set(initialBookings.map(b => b.course).filter(Boolean))) as string[];
 
   const filteredBookings = initialBookings.filter(b => {
     if (filterCourse && b.course !== filterCourse) return false;
