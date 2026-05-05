@@ -40,8 +40,16 @@ export const bookings = pgTable('bookings', {
   name: varchar('name', { length: 255 }).notNull(),
   email: varchar('email', { length: 255 }).notNull(),
   phone: varchar('phone', { length: 50 }),
+  dob: varchar('dob', { length: 50 }),
+  gender: varchar('gender', { length: 50 }),
+  country: varchar('country', { length: 100 }),
+  maritalStatus: varchar('marital_status', { length: 100 }),
   course: varchar('course', { length: 255 }),
-  status: varchar('status', { length: 50 }).default('new'),
+  amount: integer('amount'),
+  status: varchar('status', { length: 50 }).default('pending'), // pending, paid
+  paymentStatus: varchar('payment_status', { length: 50 }).default('pending'), // success, failed, pending
+  paymentReference: varchar('payment_reference', { length: 255 }),
+  paymentTimestamp: timestamp('payment_timestamp'),
   createdAt: timestamp('created_at').defaultNow(),
 });
 

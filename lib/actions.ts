@@ -92,6 +92,43 @@ export async function submitEnquiry(data: {
   }
 }
 
+export async function submitEnrollment(data: {
+  name: string;
+  email: string;
+  phone: string;
+  dob: string;
+  gender: string;
+  country: string;
+  maritalStatus: string;
+  course: string;
+  type: string;
+  amount: number;
+}) {
+  try {
+    const courseName = `${data.course} (${data.type})`;
+    
+    await db.insert(bookings).values({
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      dob: data.dob,
+      gender: data.gender,
+      country: data.country,
+      maritalStatus: data.maritalStatus,
+      course: courseName,
+      amount: data.amount,
+      status: 'pending',
+      paymentStatus: 'pending'
+    });
+    
+    revalidatePath('/dashboard/bookings');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to submit enrollment:', error);
+    return { success: false, error: 'Failed to submit enrollment' };
+  }
+}
+
 export async function deleteEnquiry(id: number) {
   try {
     await db.delete(enquiries).where(eq(enquiries.id, id));
@@ -119,7 +156,7 @@ export async function getTestimonialById(id: number) {
 
 export async function addTestimonial(data: Partial<typeof testimonials.$inferInsert>) {
   try {
-    await db.insert(testimonials).values(data as any);
+    await db.insert(testimonials).values(data as typeof testimonials.$inferInsert);
     revalidatePath('/');
     revalidatePath('/dashboard/testimonials');
     return { success: true };

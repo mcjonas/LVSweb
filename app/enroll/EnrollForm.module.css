@@ -1,0 +1,135 @@
+.formContainer {
+  max-width: 600px;
+  margin: 0 auto;
+  background: var(--white);
+  padding: 3rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+  font-family: 'Jost', sans-serif;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  color: var(--deep);
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--deep);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid rgba(45, 27, 78, 0.1);
+  border-radius: 6px;
+  background: #faf8ff;
+  color: var(--deep);
+  font-size: 1rem;
+  font-family: 'Jost', sans-serif;
+  transition: all 0.3s;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: var(--rose);
+  box-shadow: 0 0 0 3px rgba(123, 63, 160, 0.1);
+  background: var(--white);
+}
+
+.feeDisplay {
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid var(--gold);
+  padding: 1.5rem;
+  border-radius: 6px;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.feeDisplay h3 {
+  color: var(--deep);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+
+.amount {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--rose);
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.submitBtn {
+  width: 100%;
+  background: var(--deep);
+  color: var(--white);
+  padding: 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: var(--rose);
+  transform: translateY(-2px);
+}
+
+.submitBtn:disabled {
+  background: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.error {
+  color: #e53e3e;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.generalError {
+  background: #fff5f5;
+  color: #c53030;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #f56565;
+}
+
+@media (max-width: 768px) {
+  .formContainer {
+    padding: 2rem 1.5rem;
+    margin: 0 1rem;
+  }
+}

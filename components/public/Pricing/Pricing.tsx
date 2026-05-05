@@ -1,7 +1,7 @@
 import { getCourses } from '@/lib/actions';
 import styles from './Pricing.module.css';
 
-const ENROL_URL = 'https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAANAAX6CbARUMkc5RjE3STFISFg3VElZV0tNR1lIS0FNRy4u&origin=QRCode';
+// Removed static ENROL_URL
 
 const FALLBACK_COURSES = [
   { num: '01', title: 'Pre-Marital Counselling', lang: 'Asesoramiento prematrimonial / Conseil prénuptial', duration: '3 Months', fees: [{ type: 'Couple', ghs: 'GHS 1,500', usd: '$137' }] },
@@ -73,7 +73,7 @@ export default async function Pricing() {
                 </div>
               ))}
             </div>
-            <a href={ENROL_URL} target="_blank" rel="noreferrer" className={styles['btn-course']}>Enrol Now</a>
+            <a href={`/enroll?course=${encodeURIComponent(c.title)}`} className={styles['btn-course']}>Enrol Now</a>
           </div>
         ))}
       </div>
