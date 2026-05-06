@@ -51,9 +51,12 @@ function FormContent({ courses }: { courses: Course[] }) {
   }, []);
 
   const selectedCourseDetails = availableCourses.find(c => c.val === formData.course) || availableCourses[0];
-  const courseAmount = formData.type === 'Couple' && selectedCourseDetails?.priceCoupleGHS 
-    ? selectedCourseDetails.priceCoupleGHS 
-    : (selectedCourseDetails?.priceSingleGHS || 0);
+  let courseAmount = 0;
+  if (formData.type === 'Couple') {
+    courseAmount = selectedCourseDetails?.priceCoupleGHS || selectedCourseDetails?.priceSingleGHS || 0;
+  } else {
+    courseAmount = selectedCourseDetails?.priceSingleGHS || selectedCourseDetails?.priceCoupleGHS || 0;
+  }
 
   const totalAmount = courseAmount > 0 ? courseAmount + 200 : 0; // Adding Ghc200 for the registration form
 

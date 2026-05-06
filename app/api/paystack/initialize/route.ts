@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { bookings } from '@/lib/schema';
+import { revalidatePath } from 'next/cache';
 
 export async function POST(req: Request) {
   try {
@@ -28,6 +29,9 @@ export async function POST(req: Request) {
       status: 'pending',
       paymentStatus: 'pending'
     }).returning({ id: bookings.id });
+
+    // Revalidate the dashboard bookings page so it shows immediately
+    revalidatePath('/dashboard/bookings');
 
     // Initialize Paystack payment
     const paystackAmount = amount * 100; // Paystack expects amount in pesewas/kobo

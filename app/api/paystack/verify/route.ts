@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { bookings } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
+import { revalidatePath } from 'next/cache';
 
 export async function GET(req: Request) {
   try {
@@ -41,6 +42,8 @@ export async function GET(req: Request) {
             paymentTimestamp: new Date(transaction.paid_at || Date.now())
           })
           .where(eq(bookings.id, bookingId));
+          
+        revalidatePath('/dashboard/bookings');
       }
 
       return NextResponse.json({ success: true, message: 'Payment verified successfully' });

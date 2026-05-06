@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { bookings, Booking } from '@/lib/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import nodemailer from 'nodemailer';
+import { revalidatePath } from 'next/cache';
 
 export async function POST(req: Request) {
   try {
@@ -68,6 +69,8 @@ export async function POST(req: Request) {
             paymentTimestamp: new Date(),
           })
           .where(eq(bookings.id, booking.id));
+
+        revalidatePath('/dashboard/bookings');
 
         // Send confirmation email
         await sendConfirmationEmail(booking);

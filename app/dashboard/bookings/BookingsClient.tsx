@@ -58,7 +58,10 @@ export default function BookingsClient({ initialBookings }: { initialBookings: B
             <tbody>
               {filteredBookings.map(b => (
                 <tr key={b.id}>
-                  <td>{new Date(b.createdAt!).toLocaleDateString()}</td>
+                  <td>
+                    <div>{new Date(b.createdAt!).toLocaleDateString()}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#666' }}>{new Date(b.createdAt!).toLocaleTimeString()}</div>
+                  </td>
                   <td><strong>{b.name}</strong></td>
                   <td>
                     <div>{b.email}</div>
@@ -67,16 +70,23 @@ export default function BookingsClient({ initialBookings }: { initialBookings: B
                   <td><span className={styles.badge}>{b.course}</span></td>
                   <td>{b.amount ? `GHS ${b.amount.toLocaleString()}` : '-'}</td>
                   <td>
-                    <span className={`${styles.status} ${styles[b.paymentStatus || 'pending']}`} style={{
-                      padding: '4px 8px',
-                      borderRadius: '12px',
-                      fontSize: '0.8rem',
-                      fontWeight: 'bold',
-                      backgroundColor: b.paymentStatus === 'success' ? '#def7ec' : b.paymentStatus === 'failed' ? '#fde8e8' : '#fef3c7',
-                      color: b.paymentStatus === 'success' ? '#03543f' : b.paymentStatus === 'failed' ? '#9b1c1c' : '#92400e'
-                    }}>
-                      {b.paymentStatus === 'success' ? 'Paid' : b.paymentStatus === 'failed' ? 'Failed' : 'Pending'}
-                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
+                      <span className={`${styles.status} ${styles[b.paymentStatus || 'pending']}`} style={{
+                        padding: '4px 8px',
+                        borderRadius: '12px',
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold',
+                        backgroundColor: b.paymentStatus === 'success' ? '#def7ec' : b.paymentStatus === 'failed' ? '#fde8e8' : '#fef3c7',
+                        color: b.paymentStatus === 'success' ? '#03543f' : b.paymentStatus === 'failed' ? '#9b1c1c' : '#92400e'
+                      }}>
+                        {b.paymentStatus === 'success' ? 'Paid' : b.paymentStatus === 'failed' ? 'Failed' : 'Pending'}
+                      </span>
+                      {b.paymentStatus === 'success' && b.paymentTimestamp && (
+                        <span style={{ fontSize: '0.7rem', color: '#666' }}>
+                          Paid at: {new Date(b.paymentTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
