@@ -27,12 +27,23 @@ export async function GET(req: Request) {
     }
 
     const transaction = paystackData.data;
+    console.log('Paystack Transaction Metadata:', transaction.metadata);
 
     // Check if payment was successful
     if (transaction.status === 'success') {
-      const bookingId = transaction.metadata?.bookingId;
+      let metadata = transaction.metadata;
+      if (typeof metadata === 'string') {
+        try {
+          metadata = JSON.parse(metadata);
+        } catch (e) {
+          console.error('Failed to parse metadata string:', metadata);
+        }
+      }
+      
+      const bookingId = metadata?.bookingId;
 
       if (bookingId) {
+        const id = Number(bookingId);
         // Update booking in DB
         await db.update(bookings)
           .set({
@@ -41,15 +52,17 @@ export async function GET(req: Request) {
             paymentReference: reference,
             paymentTimestamp: new Date(transaction.paid_at || Date.now())
           })
-          .where(eq(bookings.id, bookingId));
+          .where(eq(bookings.id, id));
           
         revalidatePath('/dashboard/bookings');
+        return NextResponse.json({ success: true, message: 'Payment verified and database updated' });
+      } else {
+        console.error('No bookingId found in transaction metadata');
+        return NextResponse.json({ success: false, message: 'Payment verified but booking ID missing' });
       }
-
-      return NextResponse.json({ success: true, message: 'Payment verified successfully' });
     }
 
-    return NextResponse.json({ success: false, message: 'Payment not successful', data: transaction.status });
+    return NextResponse.json({ success: false, message: `Payment status: ${transaction.status}`, data: transaction.status });
   } catch (error) {
     console.error('Error in /api/paystack/verify:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

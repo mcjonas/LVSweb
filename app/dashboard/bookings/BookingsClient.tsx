@@ -17,7 +17,13 @@ export default function BookingsClient({ initialBookings }: { initialBookings: B
 
   const filteredBookings = initialBookings.filter(b => {
     if (filterCourse && b.course !== filterCourse) return false;
-    if (filterPayment && b.paymentStatus !== filterPayment) return false;
+    if (filterPayment) {
+      if (filterPayment === 'success' || filterPayment === 'paid') {
+        if (b.paymentStatus !== 'success' && b.paymentStatus !== 'paid') return false;
+      } else if (b.paymentStatus !== filterPayment) {
+        return false;
+      }
+    }
     return true;
   });
 
@@ -41,7 +47,7 @@ export default function BookingsClient({ initialBookings }: { initialBookings: B
           style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
         >
           <option value="">All Payment Statuses</option>
-          <option value="success">Paid</option>
+          <option value="paid">Paid</option>
           <option value="pending">Pending</option>
           <option value="failed">Failed</option>
         </select>
@@ -81,12 +87,12 @@ export default function BookingsClient({ initialBookings }: { initialBookings: B
                         borderRadius: '12px',
                         fontSize: '0.8rem',
                         fontWeight: 'bold',
-                        backgroundColor: b.paymentStatus === 'success' ? '#def7ec' : b.paymentStatus === 'failed' ? '#fde8e8' : '#fef3c7',
-                        color: b.paymentStatus === 'success' ? '#03543f' : b.paymentStatus === 'failed' ? '#9b1c1c' : '#92400e'
+                        backgroundColor: (b.paymentStatus === 'success' || b.paymentStatus === 'paid') ? '#def7ec' : b.paymentStatus === 'failed' ? '#fde8e8' : '#fef3c7',
+                        color: (b.paymentStatus === 'success' || b.paymentStatus === 'paid') ? '#03543f' : b.paymentStatus === 'failed' ? '#9b1c1c' : '#92400e'
                       }}>
-                        {b.paymentStatus === 'success' ? 'Paid' : b.paymentStatus === 'failed' ? 'Failed' : 'Pending'}
+                        {(b.paymentStatus === 'success' || b.paymentStatus === 'paid') ? 'Paid' : b.paymentStatus === 'failed' ? 'Failed' : 'Pending'}
                       </span>
-                      {b.paymentStatus === 'success' && b.paymentTimestamp && (
+                      {(b.paymentStatus === 'success' || b.paymentStatus === 'paid') && b.paymentTimestamp && (
                         <span style={{ fontSize: '0.7rem', color: '#666' }}>
                           Paid at: {mounted ? new Date(b.paymentTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                         </span>

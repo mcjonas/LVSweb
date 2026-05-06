@@ -31,14 +31,24 @@ export async function POST(req: Request) {
         return NextResponse.json({ message: 'No email found in event' }, { status: 400 });
       }
 
-      const bookingId = event.data.metadata?.bookingId;
+      let metadata = event.data.metadata;
+      if (typeof metadata === 'string') {
+        try {
+          metadata = JSON.parse(metadata);
+        } catch (e) {
+          console.error('Failed to parse webhook metadata string:', metadata);
+        }
+      }
+      
+      const bookingId = metadata?.bookingId;
       
       let booking;
       if (bookingId) {
+        const id = Number(bookingId);
         const matchingBookings = await db
           .select()
           .from(bookings)
-          .where(eq(bookings.id, bookingId));
+          .where(eq(bookings.id, id));
         if (matchingBookings.length > 0) {
           booking = matchingBookings[0];
         }
