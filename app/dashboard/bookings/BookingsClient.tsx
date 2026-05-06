@@ -1,12 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './bookings.module.css';
 import { Booking } from '@/lib/schema';
 
 export default function BookingsClient({ initialBookings }: { initialBookings: Booking[] }) {
   const [filterCourse, setFilterCourse] = useState('');
   const [filterPayment, setFilterPayment] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const courses = Array.from(new Set(initialBookings.map(b => b.course).filter(Boolean))) as string[];
 
@@ -59,8 +64,8 @@ export default function BookingsClient({ initialBookings }: { initialBookings: B
               {filteredBookings.map(b => (
                 <tr key={b.id}>
                   <td>
-                    <div>{new Date(b.createdAt!).toLocaleDateString()}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#666' }}>{new Date(b.createdAt!).toLocaleTimeString()}</div>
+                    <div>{mounted ? new Date(b.createdAt!).toLocaleDateString() : '...'}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#666' }}>{mounted ? new Date(b.createdAt!).toLocaleTimeString() : ''}</div>
                   </td>
                   <td><strong>{b.name}</strong></td>
                   <td>
@@ -83,7 +88,7 @@ export default function BookingsClient({ initialBookings }: { initialBookings: B
                       </span>
                       {b.paymentStatus === 'success' && b.paymentTimestamp && (
                         <span style={{ fontSize: '0.7rem', color: '#666' }}>
-                          Paid at: {new Date(b.paymentTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          Paid at: {mounted ? new Date(b.paymentTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                         </span>
                       )}
                     </div>
