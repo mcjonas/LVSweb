@@ -64,7 +64,7 @@ export async function POST(req: Request) {
         await db.update(bookings)
           .set({
             status: 'paid',
-            paymentStatus: 'success',
+            paymentStatus: 'paid',
             paymentReference: reference,
             paymentTimestamp: new Date(),
           })

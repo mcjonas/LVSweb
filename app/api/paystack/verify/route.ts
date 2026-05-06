@@ -36,8 +36,8 @@ export async function GET(req: Request) {
         // Update booking in DB
         await db.update(bookings)
           .set({
-            paymentStatus: 'success',
-            status: 'paid', // Or whatever your business logic requires
+            paymentStatus: 'paid',
+            status: 'paid', 
             paymentReference: reference,
             paymentTimestamp: new Date(transaction.paid_at || Date.now())
           })

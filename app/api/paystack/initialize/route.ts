@@ -35,7 +35,9 @@ export async function POST(req: Request) {
 
     // Initialize Paystack payment
     const paystackAmount = amount * 100; // Paystack expects amount in pesewas/kobo
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 
+                    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'));
 
     const paystackRes = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
@@ -46,7 +48,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         email,
         amount: paystackAmount,
-        callback_url: `${baseUrl}/enroll/verify`,
+        callback_url: `${baseUrl}/payment-success`,
         metadata: {
           bookingId: newBooking.id,
           course: courseName
