@@ -13,8 +13,8 @@ export default function Enquiries() {
             <div className={styles['contact-detail-text']}>
               <span className={styles['contact-detail-label']}>Phone / WhatsApp</span>
               <div className={styles['contact-detail-value']}>
-                <a href="tel:+233551552283">+233 551 552 283</a><br />
-                <a href="tel:+233209768114">+233 209 768 114</a>
+                <a href="tel:+233250000000">+233 250 000 000</a><br />
+                <a href="tel:+233250000000">+233 250 000 000</a>
               </div>
             </div>
           </div>
