@@ -160,23 +160,9 @@ export default function VideosDashboard() {
               fontSize: '1rem'
             }}
           >
-            {uploading ? 'Uploading...' : 'Upload Video'}
+            {uploading ? 'Uploading...' : 'Upload Video to Cloudinary'}
           </button>
         </form>
-      </div>
-
-      <div style={{ marginTop: '3rem' }}>
-        <h2 style={{ color: 'var(--primary)', marginBottom: '1.5rem' }}>Uploaded Videos</h2>
-        <p style={{ color: 'var(--muted)', marginBottom: '1.5rem' }}>Refresh the page to see your latest uploads.</p>
-        <button 
-          onClick={() => window.location.reload()}
-          style={{ background: '#eee', border: '1px solid #ccc', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', marginBottom: '2rem' }}
-        >
-          Refresh List
-        </button>
-        <div style={{ background: '#fff', padding: '2rem', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
-          <p><em>To view and manage the actual videos, log in as a paid user via the secure token link on the Paystack success screen.</em></p>
-        </div>
       </div>
     </div>
   );

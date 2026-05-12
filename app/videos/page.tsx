@@ -84,7 +84,6 @@ function VideosContent() {
             src={activeVideo.url} 
             controls 
             autoPlay
-            controlsList="nodownload"
             style={{ width: '100%', maxHeight: '600px', display: 'block' }} 
           />
         </div>
@@ -102,9 +101,9 @@ function VideosContent() {
               </p>
               <button 
                 onClick={() => playVideo(video.id)}
-                style={{ background: 'var(--accent)', color: 'white', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '50px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}
+                style={{ background: '#000', color: '#fff', border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%', marginTop: '1rem', fontSize: '1rem' }}
               >
-                Watch Session
+                ▶ Watch Session
               </button>
             </div>
           ))}

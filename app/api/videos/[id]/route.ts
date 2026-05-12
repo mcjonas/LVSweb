@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { db } from '@/lib/db';
 import { videos } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
-import { getSignedVideoUrl } from '@/lib/cloudinary';
+import { getVideoUrl } from '@/lib/cloudinary';
 
 export async function GET(
   req: NextRequest,
@@ -27,9 +27,9 @@ export async function GET(
         return NextResponse.json({ error: 'Video not found' }, { status: 404 });
       }
 
-      const signedUrl = getSignedVideoUrl(videoRecord[0].cloudinaryPublicId);
+      const videoUrl = getVideoUrl(videoRecord[0].cloudinaryPublicId);
       
-      return NextResponse.json({ success: true, url: signedUrl, title: videoRecord[0].title });
+      return NextResponse.json({ success: true, url: videoUrl, title: videoRecord[0].title });
     } catch (err) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

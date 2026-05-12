@@ -10,6 +10,7 @@ function PaymentStatusContent() {
   
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Verifying your payment...');
+  const [videoToken, setVideoToken] = useState<string | null>(null);
 
   useEffect(() => {
     if (!reference) {
@@ -26,6 +27,9 @@ function PaymentStatusContent() {
         if (res.ok && data.success) {
           setStatus('success');
           setMessage('Payment verified successfully!');
+          if (data.videoToken) {
+            setVideoToken(data.videoToken);
+          }
         } else {
           setStatus('error');
           setMessage(data.message || 'Payment verification failed.');
@@ -100,10 +104,15 @@ function PaymentStatusContent() {
             <p style={{ color: 'var(--muted)', fontSize: '1.1rem', marginBottom: '2.5rem', lineHeight: '1.6' }}>
               Your enrollment in our course is now confirmed. We've received your payment and secured your spot. A confirmation email has been sent to your inbox.
             </p>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-              <Link href="/" className="btn-primary" style={{ padding: '1rem 2rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Link href="/" className="btn-ghost" style={{ padding: '1rem 2rem' }}>
                 Return Home
               </Link>
+              {videoToken && (
+                <Link href={`/videos?token=${videoToken}`} className="btn-primary" style={{ padding: '1rem 2rem' }}>
+                  Access Course Videos
+                </Link>
+              )}
             </div>
           </>
         )}

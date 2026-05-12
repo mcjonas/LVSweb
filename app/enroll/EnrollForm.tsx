@@ -169,7 +169,7 @@ function FormContent({ courses }: { courses: Course[] }) {
         </div>
 
         <div className={styles.formGroup}>
-          <label>Primary telephone number (Número telefónico/ Numéro de téléphone) *</label>
+          <label>WhatsApp Contact *</label>
           <input 
             type="tel" 
             required 

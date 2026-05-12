@@ -24,17 +24,17 @@ export const uploadVideoToCloudinary = async (videoUrl: string, title: string) =
   }
 };
 
-export const getSignedVideoUrl = (publicId: string) => {
+export const getVideoUrl = (publicId: string) => {
   try {
-    // Generate a signed URL that expires in 5 minutes (300 seconds)
-    const url = cloudinary.utils.private_download_url(
-      publicId,
-      'mp4',
-      { expires_at: Math.floor(Date.now() / 1000) + 300 }
-    );
+    // Return a permanent URL so students can watch anytime
+    const url = cloudinary.url(publicId, {
+      resource_type: 'video',
+      format: 'mp4',
+      secure: true
+    });
     return url;
   } catch (error) {
-    console.error('Cloudinary signed URL error:', error);
+    console.error('Cloudinary URL generation error:', error);
     throw error;
   }
 };
