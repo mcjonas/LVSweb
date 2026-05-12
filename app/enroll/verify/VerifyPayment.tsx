@@ -10,6 +10,7 @@ function VerifyContent() {
   
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Verifying your payment...');
+  const [videoToken, setVideoToken] = useState<string | null>(null);
 
   useEffect(() => {
     if (!reference) {
@@ -26,6 +27,9 @@ function VerifyContent() {
         if (res.ok && data.success) {
           setStatus('success');
           setMessage('Payment verified successfully!');
+          if (data.videoToken) {
+            setVideoToken(data.videoToken);
+          }
         } else {
           setStatus('error');
           setMessage(data.message || 'Payment verification failed.');
@@ -57,9 +61,17 @@ function VerifyContent() {
           <div style={{ width: '60px', height: '60px', background: 'var(--accent)', borderRadius: '50%', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px', margin: '0 auto 1.5rem' }}>✓</div>
           <h2 style={{ color: 'var(--primary)', marginBottom: '1rem' }}>Payment Successful!</h2>
           <p style={{ color: 'var(--muted)', marginBottom: '2rem' }}>Thank you for enrolling. Your payment has been confirmed and we have secured your spot.</p>
-          <Link href="/" style={{ display: 'inline-block', background: 'var(--primary)', color: 'white', padding: '0.8rem 2rem', borderRadius: '50px', textDecoration: 'none', fontWeight: 'bold' }}>
-            Return to Home
-          </Link>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+            {videoToken && (
+              <Link href={`/videos?token=${videoToken}`} style={{ display: 'inline-block', background: 'var(--accent)', color: 'white', padding: '0.8rem 2rem', borderRadius: '50px', textDecoration: 'none', fontWeight: 'bold' }}>
+                Access Recorded Sessions
+              </Link>
+            )}
+            <Link href="/" style={{ display: 'inline-block', background: 'transparent', color: 'var(--primary)', border: '2px solid var(--primary)', padding: '0.8rem 2rem', borderRadius: '50px', textDecoration: 'none', fontWeight: 'bold' }}>
+              Return to Home
+            </Link>
+          </div>
         </>
       )}
 

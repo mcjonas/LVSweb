@@ -53,8 +53,17 @@ export const bookings = pgTable('bookings', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+export const videos = pgTable('videos', {
+  id: serial('id').primaryKey(),
+  title: varchar('title', { length: 255 }).notNull(),
+  cloudinaryPublicId: varchar('cloudinary_public_id', { length: 255 }).notNull(),
+  courseId: integer('course_id'), // Optional, to link to a specific course
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
 export type Enquiry = typeof enquiries.$inferSelect;
 export type NewEnquiry = typeof enquiries.$inferInsert;
 export type Testimonial = typeof testimonials.$inferSelect;
 export type Course = typeof courses.$inferSelect;
 export type Booking = typeof bookings.$inferSelect;
+export type Video = typeof videos.$inferSelect;

@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { bookings } from '@/lib/schema';
@@ -54,8 +55,19 @@ export async function GET(req: Request) {
           })
           .where(eq(bookings.id, id));
           
+        // Generate an access token for videos
+        const videoToken = jwt.sign(
+          { bookingId: id, email: transaction.customer?.email },
+          process.env.JWT_SECRET || 'fallback_secret',
+          { expiresIn: '30d' } // 30 days access
+        );
+
         revalidatePath('/dashboard/bookings');
-        return NextResponse.json({ success: true, message: 'Payment verified and database updated' });
+        return NextResponse.json({ 
+          success: true, 
+          message: 'Payment verified and database updated',
+          videoToken 
+        });
       } else {
         console.error('No bookingId found in transaction metadata');
         return NextResponse.json({ success: false, message: 'Payment verified but booking ID missing' });

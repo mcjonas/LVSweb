@@ -9,6 +9,7 @@ const NAV = [
   { href: '/dashboard/enquiries', label: 'Enquiries', icon: '📬' },
   { href: '/dashboard/bookings', label: 'Bookings', icon: '📅' },
   { href: '/dashboard/courses', label: 'Courses', icon: '📚' },
+  { href: '/dashboard/videos', label: 'Videos', icon: '🎥' },
   { href: '/dashboard/testimonials', label: 'Testimonials', icon: '💬' },
 ];
 
