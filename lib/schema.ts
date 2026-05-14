@@ -61,9 +61,63 @@ export const videos = pgTable('videos', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+// ==========================================
+// PHASE 2: LMS (Learning Management System)
+// ==========================================
+
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  passwordHash: varchar('password_hash', { length: 255 }).notNull(),
+  role: varchar('role', { length: 50 }).default('student'), // student, admin
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const modules = pgTable('modules', {
+  id: serial('id').primaryKey(),
+  courseId: integer('course_id').notNull(), // Links to existing courses table
+  title: varchar('title', { length: 255 }).notNull(),
+  orderIndex: integer('order_index').default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const lessons = pgTable('lessons', {
+  id: serial('id').primaryKey(),
+  moduleId: integer('module_id').notNull(),
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description'),
+  cloudinaryPublicId: varchar('cloudinary_public_id', { length: 255 }),
+  orderIndex: integer('order_index').default(0),
+  durationMinutes: integer('duration_minutes').default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const enrollments = pgTable('enrollments', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull(),
+  courseId: integer('course_id').notNull(),
+  paymentReference: varchar('payment_reference', { length: 255 }),
+  status: varchar('status', { length: 50 }).default('active'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const progress = pgTable('progress', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull(),
+  lessonId: integer('lesson_id').notNull(),
+  completed: integer('completed').default(0), // 0 or 1
+  completedAt: timestamp('completed_at'),
+});
+
 export type Enquiry = typeof enquiries.$inferSelect;
 export type NewEnquiry = typeof enquiries.$inferInsert;
 export type Testimonial = typeof testimonials.$inferSelect;
 export type Course = typeof courses.$inferSelect;
 export type Booking = typeof bookings.$inferSelect;
 export type Video = typeof videos.$inferSelect;
+export type User = typeof users.$inferSelect;
+export type Module = typeof modules.$inferSelect;
+export type Lesson = typeof lessons.$inferSelect;
+export type Enrollment = typeof enrollments.$inferSelect;
+export type Progress = typeof progress.$inferSelect;

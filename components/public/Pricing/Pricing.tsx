@@ -73,9 +73,29 @@ export default async function Pricing() {
                 </div>
               ))}
             </div>
-            <a href={`/enroll?course=${encodeURIComponent(c.title)}`} className={styles['btn-course']}>Enrol Now</a>
+            <a href={`/enroll?course=${encodeURIComponent(c.title)}`} className={styles['btn-course']}>Enroll Now</a>
           </div>
         ))}
+        
+        {/* NEW: Self-Paced Learning Card */}
+        <div className={styles['course-card']} style={{ border: '2px solid var(--gold)' }}>
+          <div className={styles['course-badge']} style={{ background: 'var(--gold)', color: 'white' }}>Self-Paced</div>
+          <div className={styles['course-num']} style={{ fontSize: '1.5rem', lineHeight: '1.2' }}>⭐</div>
+          <h3>Learn at Your Own Pace</h3>
+          <p className={styles['course-lang']} style={{ fontStyle: 'normal' }}>
+            Access pre-recorded lessons anytime and learn flexibly at your own pace. Perfect for busy schedules!
+          </p>
+          <div className={styles['course-duration']}>⏱ Duration: Flexible</div>
+          <div className={styles['course-fees']}>
+            <div className={styles['fee-row']}>
+              <span className={styles['fee-type']}>All Courses</span>
+              <span className={styles['fee-amount']}>Available on demand</span>
+            </div>
+          </div>
+          <a href="/learning/courses" className={styles['btn-course']} style={{ background: 'var(--accent)', color: 'white', borderColor: 'var(--accent)' }}>
+            Explore Courses
+          </a>
+        </div>
       </div>
     </section>
   );

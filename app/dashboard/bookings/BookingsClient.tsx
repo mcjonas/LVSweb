@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import styles from './bookings.module.css';
 import { Booking } from '@/lib/schema';
+import * as XLSX from 'xlsx';
 
 export default function BookingsClient({ initialBookings }: { initialBookings: Booking[] }) {
   const [filterCourse, setFilterCourse] = useState('');
@@ -27,39 +28,31 @@ export default function BookingsClient({ initialBookings }: { initialBookings: B
     return true;
   });
 
-  const exportToCSV = () => {
-    const headers = ['Date', 'Time', 'Name', 'Email', 'Phone', 'Course', 'Amount', 'Payment Status', 'Payment Time'];
-    
-    const csvRows = filteredBookings.map(b => {
+  const exportToExcel = () => {
+    const data = filteredBookings.map(b => {
       const date = b.createdAt ? new Date(b.createdAt).toLocaleDateString() : '';
       const time = b.createdAt ? new Date(b.createdAt).toLocaleTimeString() : '';
-      const amount = b.amount ? b.amount.toString() : '';
       const payStatus = (b.paymentStatus === 'success' || b.paymentStatus === 'paid') ? 'Paid' : b.paymentStatus === 'failed' ? 'Failed' : 'Pending';
       const payTime = b.paymentTimestamp ? new Date(b.paymentTimestamp).toLocaleTimeString() : '';
       
-      return [
-        `"${date}"`,
-        `"${time}"`,
-        `"${b.name || ''}"`,
-        `"${b.email || ''}"`,
-        `"${b.phone || ''}"`,
-        `"${b.course || ''}"`,
-        amount,
-        `"${payStatus}"`,
-        `"${payTime}"`
-      ].join(',');
+      return {
+        Date: date,
+        Time: time,
+        Name: b.name || '',
+        Email: b.email || '',
+        Phone: b.phone || '',
+        Course: b.course || '',
+        Amount: b.amount ? b.amount : '',
+        'Payment Status': payStatus,
+        'Payment Time': payTime
+      };
     });
     
-    const csvContent = [headers.join(','), ...csvRows].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `bookings_export_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Bookings');
+    
+    XLSX.writeFile(workbook, `bookings_export_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   return (
@@ -88,11 +81,11 @@ export default function BookingsClient({ initialBookings }: { initialBookings: B
         </select>
 
         <button 
-          onClick={exportToCSV}
+          onClick={exportToExcel}
           style={{
             marginLeft: 'auto',
             padding: '0.5rem 1rem',
-            backgroundColor: '#000',
+            backgroundColor: '#107c41',
             color: 'white',
             border: 'none',
             borderRadius: '4px',
@@ -103,7 +96,7 @@ export default function BookingsClient({ initialBookings }: { initialBookings: B
             gap: '0.5rem'
           }}
         >
-          📄 Export to CSV
+          📊 Export to Excel
         </button>
       </div>
 

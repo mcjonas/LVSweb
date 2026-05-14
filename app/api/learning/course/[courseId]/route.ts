@@ -1,0 +1,119 @@
+import { NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { courses, modules, lessons, enrollments, videos, progress } from '@/lib/schema';
+import { eq, asc, and } from 'drizzle-orm';
+import jwt from 'jsonwebtoken';
+import { getVideoUrl } from '@/lib/cloudinary';
+
+export async function GET(req: Request, { params }: { params: Promise<{ courseId: string }> }) {
+  try {
+    const { courseId: courseIdString } = await params;
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const token = authHeader.split(' ')[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret') as { userId: number };
+    } catch (err) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    const userId = decoded.userId;
+    const courseId = Number(courseIdString);
+
+    // Verify enrollment
+    const isEnrolled = await db.select()
+      .from(enrollments)
+      .where(eq(enrollments.userId, userId))
+      .where(eq(enrollments.courseId, courseId))
+      .where(eq(enrollments.status, 'active'))
+      .limit(1);
+
+    if (isEnrolled.length === 0) {
+      return NextResponse.json({ error: 'Not enrolled in this course' }, { status: 403 });
+    }
+
+    // Fetch Course
+    const courseRecord = await db.select().from(courses).where(eq(courses.id, courseId)).limit(1);
+    const course = courseRecord.length > 0 ? courseRecord[0] : { title: 'Self-Paced Course' };
+
+    // Fetch Modules
+    let courseModules = await db.select().from(modules).where(eq(modules.courseId, courseId)).orderBy(asc(modules.orderIndex));
+    
+    // Auto-seed if completely empty so the user has something to see in Phase 3!
+    if (courseModules.length === 0) {
+      const newModule = await db.insert(modules).values({
+        courseId,
+        title: 'Module 1: Introduction to the Course',
+        orderIndex: 0
+      }).returning();
+      courseModules = newModule;
+
+      // Check if they uploaded any videos previously and grab the first one
+      const uploadedVideos = await db.select().from(videos).limit(3);
+      
+      for (let i = 0; i < uploadedVideos.length; i++) {
+        await db.insert(lessons).values({
+          moduleId: newModule[0].id,
+          title: uploadedVideos[i].title,
+          description: 'Watch this session to begin your journey.',
+          cloudinaryPublicId: uploadedVideos[i].cloudinaryPublicId,
+          orderIndex: i,
+          durationMinutes: 45
+        });
+      }
+
+      // If they had no uploaded videos, we'll insert a fallback lesson (without a real video)
+      if (uploadedVideos.length === 0) {
+        await db.insert(lessons).values({
+          moduleId: newModule[0].id,
+          title: 'Welcome Session',
+          description: 'This is a placeholder lesson until the Admin uploads real videos.',
+          orderIndex: 0,
+          durationMinutes: 5
+        });
+      }
+    }
+
+    // Fetch Lessons for all modules
+    const structuredModules = [];
+    for (const mod of courseModules) {
+      const modLessons = await db.select()
+        .from(lessons)
+        .where(eq(lessons.moduleId, mod.id))
+        .orderBy(asc(lessons.orderIndex));
+
+      // Resolve video URLs for lessons
+      const lessonsWithUrls = modLessons.map(lesson => ({
+        ...lesson,
+        videoUrl: lesson.cloudinaryPublicId ? getVideoUrl(lesson.cloudinaryPublicId) : null
+      }));
+
+      structuredModules.push({
+        ...mod,
+        lessons: lessonsWithUrls
+      });
+    }
+
+    // Fetch progress
+    const userProgress = await db.select()
+      .from(progress)
+      .where(and(eq(progress.userId, userId), eq(progress.completed, 1)));
+    const completedLessonIds = userProgress.map(p => p.lessonId);
+
+    return NextResponse.json({ 
+      success: true, 
+      course: {
+        ...course,
+        modules: structuredModules
+      },
+      completedLessonIds
+    });
+  } catch (error) {
+    console.error('Error fetching course classroom:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
