@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import LenisProvider from '@/components/LenisProvider';
 
 export const metadata: Metadata = {
   title: 'Love Vibe Studio',
@@ -15,7 +16,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <LenisProvider>
+          {children}
+        </LenisProvider>
+      </body>
     </html>
   );
 }

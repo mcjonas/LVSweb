@@ -27,9 +27,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ courseId
     // Verify enrollment
     const isEnrolled = await db.select()
       .from(enrollments)
-      .where(eq(enrollments.userId, userId))
-      .where(eq(enrollments.courseId, courseId))
-      .where(eq(enrollments.status, 'active'))
+      .where(and(
+        eq(enrollments.userId, userId),
+        eq(enrollments.courseId, courseId),
+        eq(enrollments.status, 'active')
+      ))
       .limit(1);
 
     if (isEnrolled.length === 0) {
