@@ -33,7 +33,8 @@ function VerifyContent() {
           }
           if (data.token) {
             setToken(data.token);
-            // Save token to localStorage for authenticated sessions
+            // Clear any previous student session before saving the new token
+            localStorage.removeItem('lvs_learning_token');
             localStorage.setItem('lvs_learning_token', data.token);
           }
         } else {

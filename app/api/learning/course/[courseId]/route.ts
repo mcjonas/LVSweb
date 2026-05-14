@@ -100,11 +100,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ courseId
       });
     }
 
-    // Fetch progress
+    // Fetch progress — scoped to this user AND only lessons within this course
+    const allLessonIdsInCourse = structuredModules.flatMap((mod: any) => mod.lessons.map((l: any) => l.id));
     const userProgress = await db.select()
       .from(progress)
       .where(and(eq(progress.userId, userId), eq(progress.completed, 1)));
-    const completedLessonIds = userProgress.map(p => p.lessonId);
+    // Only return completed lesson IDs that belong to THIS course
+    const completedLessonIds = userProgress
+      .map(p => p.lessonId)
+      .filter(id => allLessonIdsInCourse.includes(id));
 
     return NextResponse.json({ 
       success: true, 
