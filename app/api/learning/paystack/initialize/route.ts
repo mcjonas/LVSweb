@@ -36,19 +36,20 @@ export async function POST(req: Request) {
     let tempPassword = '';
 
     if (userRecord.length === 0) {
-      // Create user with a random temporary password (they will get a magic link or can reset it)
-      tempPassword = crypto.randomBytes(4).toString('hex'); // shorter, e.g., 'a1b2c3d4'
+      // Create user with a random temporary password
+      tempPassword = crypto.randomBytes(4).toString('hex'); // e.g., 'a1b2c3d4'
       
       const newUser = await db.insert(users).values({
         name,
         email,
-        passwordHash: tempPassword, // In a real app, hash this with bcrypt
+        passwordHash: tempPassword, // stored as plaintext (temp password)
         role: 'student',
       }).returning();
       userId = newUser[0].id;
     } else {
       userId = userRecord[0].id;
-      // If user exists, they already have a password. We'll let verify know by passing a flag or empty string
+      // Retrieve the existing stored password so it can be sent in the welcome email
+      tempPassword = userRecord[0].passwordHash || '';
     }
 
     // 2. Create pending enrollment

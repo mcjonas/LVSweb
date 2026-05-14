@@ -22,9 +22,16 @@ export async function GET(req: Request) {
     });
 
     const paystackData = await paystackRes.json();
+    console.log('Paystack verify response:', JSON.stringify(paystackData, null, 2));
 
-    if (!paystackData.status || paystackData.data.status !== 'success') {
-      return NextResponse.json({ error: 'Failed to verify transaction' }, { status: 400 });
+    if (!paystackData.status || paystackData.data?.status !== 'success') {
+      const reason = paystackData.message || paystackData.data?.gateway_response || 'Transaction not successful';
+      console.error('Paystack verification failed. Reason:', reason, '| TX status:', paystackData.data?.status);
+      return NextResponse.json({ 
+        error: 'Failed to verify transaction',
+        message: `Payment verification failed: ${reason}`,
+        paystackStatus: paystackData.data?.status || 'unknown'
+      }, { status: 400 });
     }
 
     const transaction = paystackData.data;
