@@ -1,0 +1,366 @@
+/* ── CLASSROOM LAYOUT ── */
+.classroomRoot {
+  background: #f5f5f5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ── */
+.courseHeader {
+  background: var(--deep);
+  color: white;
+  padding: 1rem 1.5rem;
+}
+
+.courseHeaderInner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.courseHeaderRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.backLink {
+  color: var(--gold);
+  text-decoration: none;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.courseTitle {
+  font-size: clamp(0.95rem, 3vw, 1.4rem);
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mobile toggle — hidden on desktop */
+.lessonToggleBtn {
+  display: none;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.progressBar {
+  margin-top: 0.7rem;
+}
+
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.65);
+  margin-bottom: 0.3rem;
+}
+
+.progressTrack {
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 2px;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* ── MAIN CONTENT ── */
+.classroomBody {
+  flex: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  align-items: flex-start;
+}
+
+/* ── VIDEO PANEL ── */
+.videoPanel {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.videoWrapper {
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.videoWrapper video {
+  width: 100%;
+  aspect-ratio: 16/9;
+  display: block;
+  background: #000;
+}
+
+.videoPlaceholder {
+  width: 100%;
+  aspect-ratio: 16/9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  color: rgba(255,255,255,0.45);
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.videoPlaceholder span {
+  font-size: 2.5rem;
+}
+
+.lessonInfo {
+  background: #fff;
+  padding: 1.4rem;
+  border-radius: 10px;
+  margin-top: 1rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.lessonInfoRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.lessonInfoTitle {
+  color: var(--deep);
+  margin-bottom: 0.4rem;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+}
+
+.lessonDescription {
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+.lessonBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.badgeAccessed {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.badgeInProgress {
+  background: #f3e5f5;
+  color: var(--rose);
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.lessonDuration {
+  color: var(--muted);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.emptyVideo {
+  background: #fff;
+  padding: 4rem 2rem;
+  border-radius: 10px;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  flex: 0 0 300px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  overflow: hidden;
+  position: sticky;
+  top: 1.5rem;
+  max-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebarHeader {
+  padding: 1.1rem 1.4rem;
+  background: var(--deep);
+  color: white;
+  flex-shrink: 0;
+}
+
+.sidebarHeader h3 {
+  margin: 0;
+  font-size: 0.88rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.sidebarHeader p {
+  margin: 0.25rem 0 0;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.55);
+}
+
+.sidebarScroll {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.moduleGroup {
+  border-bottom: 1px solid #eee;
+}
+
+.moduleTitle {
+  padding: 0.8rem 1.2rem;
+  background: #fafafa;
+  font-weight: 600;
+  color: var(--deep);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.lessonItem {
+  padding: 0.85rem 1.2rem 0.85rem 1.8rem;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  transition: background 0.15s;
+}
+
+.lessonItem:hover {
+  background: #faf5ff;
+}
+
+.lessonItem.active {
+  border-left-color: var(--rose);
+  background: #f9f3fc;
+}
+
+.lessonIcon {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  flex-shrink: 0;
+}
+
+.lessonItemTitle {
+  font-size: 0.88rem;
+  line-height: 1.4;
+  margin-bottom: 0.1rem;
+  color: var(--deep);
+}
+
+.lessonItem.active .lessonItemTitle {
+  font-weight: 600;
+  color: var(--rose);
+}
+
+.lessonItemDuration {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* ── OVERLAY ── */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 40;
+}
+
+.overlay.visible {
+  display: block;
+}
+
+/* ── LOADING / ERROR STATES ── */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #ccc;
+  border-top-color: var(--rose);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+  .lessonToggleBtn {
+    display: block;
+  }
+
+  .classroomBody {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .videoPanel {
+    width: 100%;
+  }
+
+  /* Sidebar becomes a fixed drawer from the right */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: min(85vw, 320px);
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    z-index: 50;
+    transition: right 0.3s ease;
+    flex: none;
+  }
+
+  .sidebar.open {
+    right: 0;
+  }
+
+  .lessonInfoRow {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .lessonBadge {
+    flex-wrap: wrap;
+  }
+}

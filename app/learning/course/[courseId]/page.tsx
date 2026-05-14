@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, use, useRef, useCallback } from 'react';
 import Navbar from '@/components/public/Navbar/Navbar';
 import Footer from '@/components/public/Footer/Footer';
 import Link from 'next/link';
+import './classroom.css';
 
 export default function CourseClassroom({ params }: { params: Promise<{ courseId: string }> }) {
   const resolvedParams = use(params);
@@ -11,8 +12,43 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
   const [course, setCourse] = useState<any>(null);
   const [activeLesson, setActiveLesson] = useState<any>(null);
   const [error, setError] = useState('');
-  const [completedLessons, setCompletedLessons] = useState<number[]>([]);
-  const [marking, setMarking] = useState(false);
+  const [accessedLessons, setAccessedLessons] = useState<number[]>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Tracks which lesson IDs have already been posted to /api/learning/progress
+  const postedIds = useRef<Set<number>>(new Set());
+
+  // Auto-track: called whenever a lesson is selected
+  const selectLesson = useCallback(async (lesson: any) => {
+    setActiveLesson(lesson);
+    setSidebarOpen(false);
+
+    // Already posted this session — skip
+    if (postedIds.current.has(lesson.id)) return;
+
+    postedIds.current.add(lesson.id);
+    // Optimistically update UI
+    setAccessedLessons(prev => Array.from(new Set([...prev, lesson.id])));
+
+    const token = localStorage.getItem('lvs_learning_token');
+    if (!token) return;
+
+    try {
+      const res = await fetch('/api/learning/progress', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ lessonId: lesson.id }),
+      });
+      if (!res.ok) {
+        console.warn('Progress tracking failed for lesson', lesson.id);
+      }
+    } catch (err) {
+      console.warn('Progress tracking error:', err);
+    }
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('lvs_learning_token');
@@ -24,26 +60,40 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
     const fetchCourseData = async () => {
       try {
         const res = await fetch(`/api/learning/course/${resolvedParams.courseId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        
+
         if (res.ok && data.success) {
           setCourse(data.course);
-          setCompletedLessons(data.completedLessonIds || []);
-          // Set first lesson as active by default
-          if (data.course.modules && data.course.modules.length > 0) {
-            const firstMod = data.course.modules[0];
-            if (firstMod.lessons && firstMod.lessons.length > 0) {
-              setActiveLesson(firstMod.lessons[0]);
+
+          const prevAccessed: number[] = data.completedLessonIds || [];
+          setAccessedLessons(prevAccessed);
+          // Seed postedIds so we don't re-post already-tracked lessons
+          prevAccessed.forEach(id => postedIds.current.add(id));
+
+          // Auto-select first lesson
+          const firstLesson = data.course.modules?.[0]?.lessons?.[0];
+          if (firstLesson) {
+            // Set active without re-tracking if already tracked
+            setActiveLesson(firstLesson);
+            if (!postedIds.current.has(firstLesson.id)) {
+              postedIds.current.add(firstLesson.id);
+              setAccessedLessons(prev => Array.from(new Set([...prev, firstLesson.id])));
+              fetch('/api/learning/progress', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ lessonId: firstLesson.id }),
+              }).catch(() => {});
             }
           }
         } else {
           setError(data.error || 'Failed to load classroom');
         }
-      } catch (err) {
+      } catch {
         setError('Error loading classroom');
       } finally {
         setLoading(false);
@@ -53,184 +103,164 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
     fetchCourseData();
   }, [resolvedParams.courseId]);
 
-  const handleMarkCompleted = async () => {
-    if (!activeLesson) return;
-    setMarking(true);
-    try {
-      const token = localStorage.getItem('lvs_learning_token');
-      const res = await fetch('/api/learning/progress', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ lessonId: activeLesson.id })
-      });
-      const data = await res.json();
-      if (data.success) {
-        if (!completedLessons.includes(activeLesson.id)) {
-          setCompletedLessons([...completedLessons, activeLesson.id]);
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setMarking(false);
-    }
-  };
+  const totalLessons = course?.modules?.reduce(
+    (acc: number, m: any) => acc + (m.lessons?.length || 0), 0
+  ) || 0;
+  const progressPct = totalLessons > 0
+    ? Math.round((accessedLessons.length / totalLessons) * 100)
+    : 0;
 
-  if (loading) {
-    return (
-      <div style={{ background: '#f5f5f5', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <Navbar />
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ width: '40px', height: '40px', border: '3px solid #ccc', borderTop: '3px solid var(--rose)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-          <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !course) {
-    return (
-      <div style={{ background: '#f5f5f5', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <Navbar />
-        <div style={{ flex: 1, padding: '4rem 2rem', textAlign: 'center' }}>
-          <h2 style={{ color: '#c62828' }}>{error || 'Course not found'}</h2>
-          <Link href="/learning/dashboard" style={{ display: 'inline-block', marginTop: '2rem', background: 'var(--deep)', color: 'white', padding: '0.8rem 2rem', borderRadius: '50px', textDecoration: 'none' }}>
-            Back to Dashboard
-          </Link>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ background: '#f5f5f5', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+  /* ─── Loading ─── */
+  if (loading) return (
+    <div className="classroomRoot">
       <Navbar />
-      
-      {/* Course Header */}
-      <div style={{ background: 'var(--deep)', color: 'white', padding: '2rem' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <Link href="/learning/dashboard" style={{ color: 'var(--gold)', textDecoration: 'none', fontSize: '1.2rem' }}>
-            ← Back
-          </Link>
-          <h1 style={{ fontSize: '1.5rem', margin: 0 }}>{course.title}</h1>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="spinner" />
+      </div>
+    </div>
+  );
+
+  /* ─── Error ─── */
+  if (error || !course) return (
+    <div className="classroomRoot">
+      <Navbar />
+      <div style={{ flex: 1, padding: '4rem 2rem', textAlign: 'center' }}>
+        <h2 style={{ color: '#c62828' }}>{error || 'Course not found'}</h2>
+        <Link href="/learning/dashboard" style={{ display: 'inline-block', marginTop: '2rem', background: 'var(--deep)', color: 'white', padding: '0.8rem 2rem', borderRadius: '50px', textDecoration: 'none' }}>
+          Back to Dashboard
+        </Link>
+      </div>
+      <Footer />
+    </div>
+  );
+
+  /* ─── Main UI ─── */
+  return (
+    <div className="classroomRoot">
+      <Navbar />
+
+      {/* ── Header ── */}
+      <div className="courseHeader">
+        <div className="courseHeaderInner">
+          <div className="courseHeaderRow">
+            <Link href="/learning/dashboard" className="backLink">← Back</Link>
+            <h1 className="courseTitle">{course.title}</h1>
+            <button
+              className="lessonToggleBtn"
+              onClick={() => setSidebarOpen(o => !o)}
+              aria-label="Toggle lesson list"
+            >
+              📋 Lessons
+            </button>
+          </div>
+
+          {/* Progress */}
+          <div className="progressBar">
+            <div className="progressLabel">
+              <span>{accessedLessons.length} of {totalLessons} lessons accessed</span>
+              <span>{progressPct}%</span>
+            </div>
+            <div className="progressTrack">
+              <div className="progressFill" style={{ width: `${progressPct}%` }} />
+            </div>
+          </div>
         </div>
       </div>
 
-      <div style={{ flex: 1, maxWidth: '1400px', margin: '0 auto', width: '100%', display: 'flex', gap: '2rem', padding: '2rem', alignItems: 'flex-start' }}>
-        
-        {/* Main Content Area (Video Player) */}
-        <div style={{ flex: '1 1 70%', minWidth: 0 }}>
-          {activeLesson ? (
-            <div style={{ background: '#000', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
-              {activeLesson.videoUrl ? (
-                <video 
-                  src={activeLesson.videoUrl} 
-                  controls 
-                  autoPlay
-                  controlsList="nodownload"
-                  style={{ width: '100%', aspectRatio: '16/9', display: 'block', background: '#000' }} 
-                />
-              ) : (
-                <div style={{ width: '100%', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111', color: 'var(--muted)' }}>
-                  Video content is being processed. Check back later.
-                </div>
-              )}
-            </div>
-          ) : (
-            <div style={{ background: '#fff', padding: '4rem', borderRadius: '12px', textAlign: 'center', color: 'var(--muted)' }}>
-              Select a lesson from the sidebar to begin.
-            </div>
-          )}
+      {/* ── Overlay (mobile) ── */}
+      <div
+        className={`overlay${sidebarOpen ? ' visible' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+      />
 
-          {activeLesson && (
-            <div style={{ background: '#fff', padding: '2rem', borderRadius: '12px', marginTop: '2rem', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
-              <h2 style={{ color: 'var(--deep)', marginBottom: '1rem' }}>{activeLesson.title}</h2>
-              <p style={{ color: 'var(--muted)', lineHeight: '1.6' }}>
-                {activeLesson.description || 'No description available for this lesson.'}
-              </p>
-              
-              <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eee', paddingTop: '1.5rem' }}>
-                <span style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>⏱ {activeLesson.durationMinutes} minutes</span>
-                <button 
-                  style={{ 
-                    background: completedLessons.includes(activeLesson.id) ? '#4caf50' : 'var(--rose)', 
-                    color: 'white', border: 'none', padding: '0.8rem 2rem', borderRadius: '50px', 
-                    fontWeight: 'bold', cursor: marking ? 'not-allowed' : 'pointer',
-                    opacity: marking ? 0.7 : 1
-                  }}
-                  onClick={handleMarkCompleted}
-                  disabled={marking}
-                >
-                  {marking ? 'Marking...' : completedLessons.includes(activeLesson.id) ? '✅ Completed' : 'Mark as Completed'}
-                </button>
+      {/* ── Body ── */}
+      <div className="classroomBody">
+
+        {/* Video Panel */}
+        <div className="videoPanel">
+          {activeLesson ? (
+            <>
+              <div className="videoWrapper">
+                {activeLesson.videoUrl ? (
+                  <video
+                    key={activeLesson.id}
+                    src={activeLesson.videoUrl}
+                    controls
+                    controlsList="nodownload"
+                  />
+                ) : (
+                  <div className="videoPlaceholder">
+                    <span>🎬</span>
+                    <p>Video content is being processed. Check back soon.</p>
+                  </div>
+                )}
               </div>
+
+              <div className="lessonInfo">
+                <div className="lessonInfoRow">
+                  <div>
+                    <h2 className="lessonInfoTitle">{activeLesson.title}</h2>
+                    <p className="lessonDescription">
+                      {activeLesson.description || 'No description available for this lesson.'}
+                    </p>
+                  </div>
+                  <div className="lessonBadge">
+                    <span className={accessedLessons.includes(activeLesson.id) ? 'badgeAccessed' : 'badgeInProgress'}>
+                      {accessedLessons.includes(activeLesson.id) ? '✓ Accessed' : '▶ In Progress'}
+                    </span>
+                    <span className="lessonDuration">⏱ {activeLesson.durationMinutes} min</span>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="emptyVideo">
+              <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>📺</span>
+              Select a lesson from the list to start watching.
             </div>
           )}
         </div>
 
-        {/* Sidebar (Modules & Lessons) */}
-        <div style={{ flex: '0 0 350px', background: '#fff', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', overflow: 'hidden', position: 'sticky', top: '2rem' }}>
-          <div style={{ padding: '1.5rem', background: '#fafafa', borderBottom: '1px solid #eee' }}>
-            <h3 style={{ color: 'var(--deep)', margin: 0 }}>Course Content</h3>
+        {/* Sidebar */}
+        <div className={`sidebar${sidebarOpen ? ' open' : ''}`}>
+          <div className="sidebarHeader">
+            <h3>Course Content</h3>
+            <p>{totalLessons} lesson{totalLessons !== 1 ? 's' : ''}</p>
           </div>
-          
-          <div style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
-            {course.modules && course.modules.map((mod: any, modIdx: number) => (
-              <div key={modIdx} style={{ borderBottom: '1px solid #eee' }}>
-                <div style={{ padding: '1rem 1.5rem', background: '#fff', fontWeight: 'bold', color: 'var(--deep)', cursor: 'pointer' }}>
-                  {mod.title}
-                </div>
-                
-                <div style={{ background: '#fafafa' }}>
-                  {mod.lessons && mod.lessons.map((lesson: any, lesIdx: number) => {
-                    const isActive = activeLesson?.id === lesson.id;
-                    return (
-                      <div 
-                        key={lesIdx} 
-                        onClick={() => setActiveLesson(lesson)}
-                        style={{ 
-                          padding: '1rem 1.5rem 1rem 3rem', 
-                          cursor: 'pointer', 
-                          borderLeft: isActive ? '4px solid var(--rose)' : '4px solid transparent',
-                          background: isActive ? '#f9f3fc' : 'transparent',
-                          color: isActive ? 'var(--rose)' : 'var(--muted)',
-                          transition: 'all 0.2s',
-                          fontSize: '0.95rem'
-                        }}
-                      >
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                          <span style={{ fontSize: '1.2rem', lineHeight: '1' }}>
-                            {completedLessons.includes(lesson.id) ? '✅' : isActive ? '▶' : '📺'}
-                          </span>
-                          <div>
-                            <div style={{ fontWeight: isActive ? 'bold' : 'normal', marginBottom: '0.2rem' }}>
-                              {lesson.title}
-                            </div>
-                            <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
-                              {lesson.durationMinutes} min
-                            </div>
-                          </div>
-                        </div>
+
+          <div className="sidebarScroll">
+            {course.modules?.map((mod: any, modIdx: number) => (
+              <div key={modIdx} className="moduleGroup">
+                <div className="moduleTitle">{mod.title}</div>
+                {mod.lessons?.map((lesson: any, lesIdx: number) => {
+                  const isActive = activeLesson?.id === lesson.id;
+                  const isAccessed = accessedLessons.includes(lesson.id);
+                  return (
+                    <div
+                      key={lesIdx}
+                      className={`lessonItem${isActive ? ' active' : ''}`}
+                      onClick={() => selectLesson(lesson)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={e => e.key === 'Enter' && selectLesson(lesson)}
+                    >
+                      <span className="lessonIcon">
+                        {isAccessed ? '✅' : isActive ? '▶' : '📺'}
+                      </span>
+                      <div>
+                        <div className="lessonItemTitle">{lesson.title}</div>
+                        <div className="lessonItemDuration">{lesson.durationMinutes} min</div>
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  );
+                })}
               </div>
             ))}
-            
-            {(!course.modules || course.modules.length === 0) && (
-              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)' }}>
-                No modules available yet.
-              </div>
-            )}
           </div>
         </div>
       </div>
-      
+
+      <Footer />
     </div>
   );
 }
