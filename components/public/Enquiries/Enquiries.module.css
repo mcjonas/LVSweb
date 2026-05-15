@@ -47,8 +47,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
   flex-shrink: 0;
+  color: var(--gold);
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.contact-detail:hover .contact-detail-icon {
+  background: rgba(212,175,55,0.25);
+  border-color: rgba(212,175,55,0.6);
 }
 
 .contact-detail-text { display: flex; flex-direction: column; gap: 0.2rem; }
@@ -64,50 +70,38 @@
 .contact-detail-value a { color: var(--white); text-decoration: none; transition: color 0.3s; }
 .contact-detail-value a:hover { color: var(--gold); }
 
-.qr-wrap {
+/* ── CTA registration button ── */
+.cta-wrap {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  gap: 1.2rem;
 }
 
-.qr-frame {
-  background: var(--white);
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  display: inline-block;
-}
-
-.qr-frame img {
-  display: block;
-  border-radius: 4px;
-  background: #eee;
-}
-
-.qr-label {
-  text-align: center;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.1rem;
-  font-weight: 300;
-  color: var(--white);
-  line-height: 1.5;
-}
-
-.qr-label span {
-  color: var(--gold);
-  display: block;
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin-top: 0.3rem;
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, var(--gold) 0%, #b8922a 100%);
+  color: #1a0a2e;
   font-family: 'Jost', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 0.75rem 1.6rem;
+  border-radius: 50px;
+  transition: opacity 0.25s, transform 0.25s, box-shadow 0.25s;
+  box-shadow: 0 8px 24px rgba(212,175,55,0.35);
+}
+
+.cta-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(212,175,55,0.5);
 }
 
 @media (max-width: 900px) {
   .enquiries { padding: 4rem 1.5rem; }
   .enquiries-inner { grid-template-columns: 1fr; gap: 2.5rem; text-align: center; }
   .contact-detail { justify-content: center; text-align: left; }
-  .qr-frame img { width: 160px; height: 160px; }
 }
-

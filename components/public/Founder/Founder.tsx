@@ -1,6 +1,24 @@
+'use client';
+
 import styles from './Founder.module.css';
 import founder from '../../../public/founder.png';
+import { useCountUp } from '../../../hooks/useCountUp';
 
+const FOUNDER_STATS = [
+  { num: 10, suffix: '+', label: 'Years Experience' },
+  { num: 500, suffix: '+', label: 'Lives Transformed' },
+  { num: 6, suffix: '', label: 'Programs Offered' },
+];
+
+function FounderStat({ num, suffix, label }: typeof FOUNDER_STATS[0]) {
+  const count = useCountUp(num, 2500);
+  return (
+    <div className={styles.stat}>
+      <span className={styles.statNum}>{count}{suffix}</span>
+      <span className={styles.statLabel}>{label}</span>
+    </div>
+  );
+}
 
 export default function Founder() {
   return (
@@ -31,18 +49,9 @@ export default function Founder() {
             Through expert-led online courses &amp; programmes, she equips couples and individuals with the tools, language, and confidence to build thriving, lasting relationships.
           </p>
           <div className={styles.stats}>
-            <div className={styles.stat}>
-              <span className={styles.statNum}>10+</span>
-              <span className={styles.statLabel}>Years Experience</span>
-            </div>
-            <div className={styles.stat}>
-              <span className={styles.statNum}>500+</span>
-              <span className={styles.statLabel}>Lives Transformed</span>
-            </div>
-            <div className={styles.stat}>
-              <span className={styles.statNum}>6</span>
-              <span className={styles.statLabel}>Programs Offered</span>
-            </div>
+            {FOUNDER_STATS.map(stat => (
+              <FounderStat key={stat.label} {...stat} />
+            ))}
           </div>
           <a href="#pricing" className={styles.btn}>Take a Course with Her</a>
         </div>
