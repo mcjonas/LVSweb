@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { enrollments, users, bookings } from '@/lib/schema';
-import { eq } from 'drizzle-orm';
+import { enrollments, users, bookings, courses } from '@/lib/schema';
+import { eq, ilike } from 'drizzle-orm';
 import crypto from 'crypto';
 
 export async function POST(req: Request) {
@@ -12,6 +12,10 @@ export async function POST(req: Request) {
     if (!name || !email || !course || !amount || !phone) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    // Find the course by title to get the correct courseId
+    const courseRecord = await db.select().from(courses).where(ilike(courses.title, `%${course}%`)).limit(1);
+    const courseId = courseRecord.length > 0 ? courseRecord[0].id : 1; // fallback to 1
 
     const courseName = `${course} (${type || 'Single'})`;
 
@@ -38,7 +42,7 @@ export async function POST(req: Request) {
     if (userRecord.length === 0) {
       // Create user with a random temporary password
       tempPassword = crypto.randomBytes(4).toString('hex'); // e.g., 'a1b2c3d4'
-      
+
       const newUser = await db.insert(users).values({
         name,
         email,
@@ -52,16 +56,14 @@ export async function POST(req: Request) {
       tempPassword = userRecord[0].passwordHash || '';
     }
 
-    // 2. Create pending enrollment
-    // Note: Since we don't have course IDs easily mapped from strings right now, we'll just save courseId=0 for now and store the string in a metadata field, or we should map the course.
-    // Let's just use 1 as a placeholder courseId until we have real dynamic courses in the DB
+    // 3. Create pending enrollment with correct courseId
     const newEnrollment = await db.insert(enrollments).values({
       userId,
-      courseId: 1, 
+      courseId,
       status: 'pending',
     }).returning();
 
-    // 3. Initialize Paystack payment
+    // 4. Initialize Paystack payment
     const paystackAmount = amount * 100; // pesewas
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ||
                     (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` :
@@ -81,6 +83,7 @@ export async function POST(req: Request) {
         metadata: {
           enrollmentId: newEnrollment[0].id,
           bookingId: newBooking.id,
+          courseId,
           type: 'learning_platform',
           course,
           tempPassword

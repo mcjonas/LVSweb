@@ -44,7 +44,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ courseId
 
     // Fetch Modules
     let courseModules = await db.select().from(modules).where(eq(modules.courseId, courseId)).orderBy(asc(modules.orderIndex));
-    
+
     // Auto-seed if completely empty so the user has something to see in Phase 3!
     if (courseModules.length === 0) {
       const newModule = await db.insert(modules).values({
@@ -54,9 +54,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ courseId
       }).returning();
       courseModules = newModule;
 
-      // Check if they uploaded any videos previously and grab the first one
-      const uploadedVideos = await db.select().from(videos).limit(3);
-      
+      // Check if course has any videos assigned and grab them
+      const uploadedVideos = await db.select().from(videos).where(eq(videos.courseId, courseId)).limit(3);
+
       for (let i = 0; i < uploadedVideos.length; i++) {
         await db.insert(lessons).values({
           moduleId: newModule[0].id,

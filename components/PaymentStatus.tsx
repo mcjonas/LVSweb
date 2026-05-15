@@ -7,10 +7,10 @@ import Link from 'next/link';
 function PaymentStatusContent() {
   const searchParams = useSearchParams();
   const reference = searchParams.get('reference') || searchParams.get('trxref');
-  
+
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Verifying your payment...');
-  const [videoToken, setVideoToken] = useState<string | null>(null);
+  const [courseId, setC] = useState<number | null>(null);
 
   useEffect(() => {
     if (!reference) {
@@ -23,12 +23,13 @@ function PaymentStatusContent() {
       try {
         const res = await fetch(`/api/paystack/verify?reference=${reference}`);
         const data = await res.json();
-        
+
         if (res.ok && data.success) {
           setStatus('success');
           setMessage('Payment verified successfully!');
-          if (data.videoToken) {
-            setVideoToken(data.videoToken);
+          if (data.token) {
+            localStorage.setItem('lvs_learning_token', data.token);
+            setC(data.courseId);
           }
         } else {
           setStatus('error');
@@ -43,14 +44,22 @@ function PaymentStatusContent() {
     verifyPayment();
   }, [reference]);
 
+  const handleContinueToLearning = () => {
+    if (courseId) {
+      window.location.href = `/learning/course/${courseId}`;
+    } else {
+      window.location.href = '/learning/dashboard';
+    }
+  };
+
   return (
-    <div style={{ 
-      background: 'white', 
-      padding: '3rem', 
-      borderRadius: '24px', 
-      boxShadow: '0 20px 40px rgba(45, 27, 78, 0.1)', 
-      textAlign: 'center', 
-      maxWidth: '550px', 
+    <div style={{
+      background: 'white',
+      padding: '3rem',
+      borderRadius: '24px',
+      boxShadow: '0 20px 40px rgba(45, 27, 78, 0.1)',
+      textAlign: 'center',
+      maxWidth: '550px',
       width: '100%',
       position: 'relative',
       overflow: 'hidden',
@@ -72,13 +81,13 @@ function PaymentStatusContent() {
       <div style={{ position: 'relative', zIndex: 1 }}>
         {status === 'loading' && (
           <>
-            <div className="animate-spin-custom" style={{ 
-              width: '60px', 
-              height: '60px', 
-              border: '4px solid var(--cream)', 
-              borderTop: '4px solid var(--rose)', 
-              borderRadius: '50%', 
-              margin: '0 auto 2rem' 
+            <div className="animate-spin-custom" style={{
+              width: '60px',
+              height: '60px',
+              border: '4px solid var(--cream)',
+              borderTop: '4px solid var(--rose)',
+              borderRadius: '50%',
+              margin: '0 auto 2rem'
             }}></div>
             <h2 style={{ color: 'var(--deep)', fontSize: '2rem', marginBottom: '1rem', fontWeight: '600' }}>Processing</h2>
             <p style={{ color: 'var(--muted)', fontSize: '1.1rem' }}>{message}</p>
@@ -87,16 +96,16 @@ function PaymentStatusContent() {
 
         {status === 'success' && (
           <>
-            <div className="animate-scale-in" style={{ 
-              width: '80px', 
-              height: '80px', 
-              background: 'var(--rose)', 
-              borderRadius: '50%', 
-              color: 'white', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              fontSize: '40px', 
+            <div className="animate-scale-in" style={{
+              width: '80px',
+              height: '80px',
+              background: 'var(--rose)',
+              borderRadius: '50%',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '40px',
               margin: '0 auto 2rem',
               boxShadow: '0 10px 20px rgba(123, 63, 160, 0.3)',
             }}>✓</div>
@@ -108,27 +117,29 @@ function PaymentStatusContent() {
               <Link href="/" className="btn-ghost" style={{ padding: '1rem 2rem' }}>
                 Return Home
               </Link>
-              {videoToken && (
-                <Link href={`/videos?token=${videoToken}`} className="btn-primary" style={{ padding: '1rem 2rem' }}>
-                  Access Course Videos
-                </Link>
-              )}
+              <button
+                onClick={handleContinueToLearning}
+                className="btn-primary"
+                style={{ padding: '1rem 2rem', background: 'var(--rose)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'none' }}
+              >
+                Start Learning Now
+              </button>
             </div>
           </>
         )}
 
         {status === 'error' && (
           <>
-            <div className="animate-scale-in" style={{ 
-              width: '80px', 
-              height: '80px', 
-              background: '#ef4444', 
-              borderRadius: '50%', 
-              color: 'white', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              fontSize: '40px', 
+            <div className="animate-scale-in" style={{
+              width: '80px',
+              height: '80px',
+              background: '#ef4444',
+              borderRadius: '50%',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '40px',
               margin: '0 auto 2rem',
               boxShadow: '0 10px 20px rgba(239, 68, 68, 0.2)'
             }}>✕</div>

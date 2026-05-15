@@ -38,14 +38,15 @@ export async function GET(req: Request) {
     const metadata = transaction.metadata;
     const enrollmentId = metadata?.enrollmentId;
     const bookingId = metadata?.bookingId;
+    const courseId = metadata?.courseId;
 
     if (enrollmentId) {
       const id = Number(enrollmentId);
-      
+
       // Update enrollment in DB to active
       await db.update(enrollments)
         .set({
-          status: 'active', 
+          status: 'active',
           paymentReference: reference,
         })
         .where(eq(enrollments.id, id));
@@ -60,14 +61,14 @@ export async function GET(req: Request) {
           })
           .where(eq(bookings.id, Number(bookingId)));
       }
-        
+
       // Fetch user to generate token
       const enrollmentRecord = await db.select().from(enrollments).where(eq(enrollments.id, id)).limit(1);
       const userRecord = await db.select().from(users).where(eq(users.id, enrollmentRecord[0].userId)).limit(1);
 
       // Generate secure login token (Magic Link approach)
       const token = jwt.sign(
-        { userId: userRecord[0].id, email: userRecord[0].email, role: userRecord[0].role },
+        { userId: userRecord[0].id, email: userRecord[0].email, name: userRecord[0].name, role: userRecord[0].role },
         process.env.JWT_SECRET || 'fallback_secret',
         { expiresIn: '30d' }
       );
@@ -121,10 +122,12 @@ export async function GET(req: Request) {
         console.warn('SMTP credentials not provided. Welcome email skipped.');
       }
 
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         message: 'Payment verified, account activated',
         token,
+        courseId: courseId || enrollmentRecord[0].courseId,
+        enrollmentId,
         tempPassword: metadata.tempPassword || null
       });
     }
