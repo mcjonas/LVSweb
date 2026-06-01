@@ -42,7 +42,9 @@ export function middleware(request: NextRequest) {
     const authCookie = request.cookies.get('dashboard_auth');
     
     if (!authCookie || authCookie.value !== 'authenticated') {
-      return NextResponse.redirect(new URL('/login', request.url));
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('from', path);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
