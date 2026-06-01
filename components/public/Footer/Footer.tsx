@@ -45,7 +45,7 @@ export default function Footer() {
         </div>
       </footer>
       <div className={styles.bottom}>
-        <span>© {new Date().getFullYear()} Love Vibe Studios. All rights reserved.</span>
+        <span suppressHydrationWarning>© {new Date().getFullYear()} Love Vibe Studios. All rights reserved.</span>
         <a href="/privacy" className={styles.privacyLink}>Privacy &amp; Terms</a>
         <span>Where love is learned and not left to chance</span>
       </div>

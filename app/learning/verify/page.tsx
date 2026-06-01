@@ -58,6 +58,8 @@ function VerifyContent() {
   const dashboardHref = courseId ? `/learning/course/${courseId}` : '/learning/dashboard';
   const dashboardLabel = courseId ? 'Start My Course' : 'Go to My Dashboard';
 
+  if (!mounted) return null;
+
   return (
     <div style={{ background: '#f5f5f5', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
       <div style={{ background: '#fff', padding: '3rem', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', textAlign: 'center', maxWidth: '500px', width: '100%' }}>
@@ -110,6 +112,11 @@ export default function VerifyLearningEnrollment() {
   return (
     <Suspense fallback={<div style={{ textAlign: 'center', padding: '4rem' }}>Loading verification...</div>}>
       <VerifyContent />
+    </Suspense>
+  );
+}
+
+VerifyContent />
     </Suspense>
   );
 }

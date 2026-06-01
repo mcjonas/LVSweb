@@ -22,14 +22,14 @@ export default async function Pricing() {
           fees.push({ 
             type: 'Single', 
             ghs: `GHS ${c.priceSingleGHS.toLocaleString()}`, 
-            usd: `$${c.priceSingleUSD?.toLocaleString()}` 
+            usd: c.priceSingleUSD ? `$${c.priceSingleUSD.toLocaleString()}` : `$${Math.round(c.priceSingleGHS / 11).toLocaleString()}` 
           });
         }
         if (c.priceCoupleGHS) {
           fees.push({ 
             type: 'Couple', 
             ghs: `GHS ${c.priceCoupleGHS.toLocaleString()}`, 
-            usd: `$${c.priceCoupleUSD?.toLocaleString()}` 
+            usd: c.priceCoupleUSD ? `$${c.priceCoupleUSD.toLocaleString()}` : `$${Math.round(c.priceCoupleGHS / 11).toLocaleString()}` 
           });
         }
         // Fallback for "Thriving Beyond Divorce" style single fee

@@ -9,6 +9,7 @@ import './classroom.css';
 export default function CourseClassroom({ params }: { params: Promise<{ courseId: string }> }) {
   const resolvedParams = use(params);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [course, setCourse] = useState<any>(null);
   const [activeLesson, setActiveLesson] = useState<any>(null);
   const [error, setError] = useState('');
@@ -51,6 +52,7 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
   }, []);
 
   useEffect(() => {
+    setMounted(true);
     const token = localStorage.getItem('lvs_learning_token');
     if (!token) {
       window.location.href = '/learning/login';
@@ -111,7 +113,7 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
     : 0;
 
   /* ─── Loading ─── */
-  if (loading) return (
+  if (!mounted || loading) return (
     <div className="classroomRoot">
       <Navbar />
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

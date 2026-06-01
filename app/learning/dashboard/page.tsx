@@ -10,8 +10,10 @@ export default function LearningDashboard() {
   const [error, setError] = useState('');
   const [studentName, setStudentName] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // Detect mobile
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
@@ -23,7 +25,7 @@ export default function LearningDashboard() {
       return;
     }
 
-    // Decode name from JWT payload (no library needed — just base64)
+    // Decode name from JWT payload
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       if (payload.name) setStudentName(payload.name.split(' ')[0]);
@@ -62,7 +64,7 @@ export default function LearningDashboard() {
     window.location.href = '/learning/login';
   };
 
-  if (loading) return (
+  if (!mounted || loading) return (
     <div style={{ background: '#f5f5f5', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

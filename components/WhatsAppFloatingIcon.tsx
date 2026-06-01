@@ -4,12 +4,16 @@ import { useState, useEffect } from 'react';
 
 export default function WhatsAppFloatingIcon() {
   const [visible, setVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // Delay appearance for a smooth entrance
     const timer = setTimeout(() => setVisible(true), 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  if (!mounted) return null;
 
   return (
     <>

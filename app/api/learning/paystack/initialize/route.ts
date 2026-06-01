@@ -16,7 +16,21 @@ export async function POST(req: Request) {
 
     // Find the course by title to get the correct courseId
     const courseRecord = await db.select().from(courses).where(ilike(courses.title, `%${course}%`)).limit(1);
-    const courseId = courseRecord.length > 0 ? courseRecord[0].id : 1; // fallback to 1
+    
+    let courseId;
+    if (courseRecord.length > 0) {
+      courseId = courseRecord[0].id;
+    } else {
+      // If no exact match, try a more relaxed search or default to the first available course
+      const allCourses = await db.select().from(courses).limit(1);
+      if (allCourses.length > 0) {
+        courseId = allCourses[0].id;
+        console.warn(`No exact course match for "${course}", defaulting to first course: ${allCourses[0].title}`);
+      } else {
+        courseId = 1; // absolute fallback
+        console.warn(`No courses found in database, using fallback ID 1`);
+      }
+    }
 
     const courseName = `${course} (${type || 'Single'})`;
 

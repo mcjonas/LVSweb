@@ -40,7 +40,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ courseId
 
     // Fetch Course
     const courseRecord = await db.select().from(courses).where(eq(courses.id, courseId)).limit(1);
-    const course = courseRecord.length > 0 ? courseRecord[0] : { title: 'Self-Paced Course' };
+    const course = courseRecord.length > 0 
+      ? courseRecord[0] 
+      : { id: courseId, title: 'Self-Paced Learning Program', description: 'Your premium self-paced learning material.' };
 
     // Fetch Modules
     let courseModules = await db.select().from(modules).where(eq(modules.courseId, courseId)).orderBy(asc(modules.orderIndex));
@@ -49,12 +51,20 @@ export async function GET(req: Request, { params }: { params: Promise<{ courseId
     if (courseModules.length === 0) {
       const newModule = await db.insert(modules).values({
         courseId,
-        title: 'Module 1: Introduction to the Course',
+        title: `Module 1: Welcome to ${course.title}`,
         orderIndex: 0
       }).returning();
       courseModules = newModule;
 
-      const uploadedVideos = await db.select().from(videos).where(eq(videos.courseId, courseId)).limit(3);
+      let uploadedVideos = await db.select().from(videos).where(eq(videos.courseId, courseId)).limit(5);
+
+      // Fallback: If no videos linked by courseId, try matching by course title in the video title
+      if (uploadedVideos.length === 0 && course.title) {
+        uploadedVideos = await db.select()
+          .from(videos)
+          .where(ilike(videos.title, `%${course.title}%`))
+          .limit(5);
+      }
 
       for (let i = 0; i < uploadedVideos.length; i++) {
         await db.insert(lessons).values({

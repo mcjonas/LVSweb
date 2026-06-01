@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { db } from '@/lib/db';
-import { videos, lessons, courses, modules } from '@/lib/schema';
-import { eq, ilike } from 'drizzle-orm';
+import { videos, lessons, courses, modules, users, enrollments } from '@/lib/schema';
+import { eq, ilike, desc } from 'drizzle-orm';
 import { uploadVideoToCloudinary } from '@/lib/cloudinary';
 
 const ZOOM_WEBHOOK_SECRET_TOKEN = process.env.ZOOM_WEBHOOK_SECRET_TOKEN || '';
@@ -94,6 +94,49 @@ export async function POST(req: NextRequest) {
         });
 
         console.log(`Successfully processed Zoom recording: ${topic}`);
+      }
+      
+      return NextResponse.json({ status: 'success' });
+    }
+
+    return NextResponse.json({ status: 'ignored' });
+  } catch (error) {
+    console.error('Zoom webhook error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+nrollment (active or pending)
+            const enrollmentRecord = await db.select()
+              .from(enrollments)
+              .where(eq(enrollments.userId, userRecord[0].id))
+              .orderBy(desc(enrollments.createdAt))
+              .limit(1);
+            
+            if (enrollmentRecord.length > 0) {
+              courseId = enrollmentRecord[0].courseId;
+            }
+          }
+        }
+
+        // 3. Last Resort: Try matching topic to course title
+        if (!courseId) {
+          const courseMatch = await db.select().from(courses).where(ilike(courses.title, `%${topic}%`)).limit(1);
+          if (courseMatch.length > 0) {
+            courseId = courseMatch[0].id;
+          }
+        }
+
+        // 4. Save to general videos table for audit/backup
+        await db.insert(videos).values({
+          title: topic,
+          zoomId: zoomId.toString(),
+          downloadUrl: downloadUrl,
+          cloudinaryPublicId: cloudinaryPublicId,
+          lessonId: lessonId,
+          courseId: courseId, // Now we have courseId!
+        });
+
+        console.log(`Successfully processed Zoom recording: ${topic} for course: ${courseId}`);
       }
       
       return NextResponse.json({ status: 'success' });
