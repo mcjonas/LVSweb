@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     }).returning({ id: bookings.id });
 
     // 2. Check if user exists or create pending user
-    let userRecord = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const userRecord = await db.select().from(users).where(eq(users.email, email)).limit(1);
     let userId;
     let tempPassword = '';
 

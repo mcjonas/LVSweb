@@ -13,7 +13,10 @@ export function middleware(request: NextRequest) {
 
   // 1. Rate Limiting for sensitive routes
   if (path.startsWith('/api/auth') || path.startsWith('/api/learning/auth') || path.startsWith('/api/paystack/initialize')) {
-    const ip = request.ip || 'anonymous';
+    // Standard way to get IP in Next.js middleware (works on Vercel and standard Node)
+    const forwarded = request.headers.get('x-forwarded-for');
+    const ip = forwarded ? forwarded.split(',')[0] : 'anonymous';
+    
     const now = Date.now();
     const userData = ipCache.get(ip);
 
