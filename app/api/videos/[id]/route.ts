@@ -27,9 +27,19 @@ export async function GET(
         return NextResponse.json({ error: 'Video not found' }, { status: 404 });
       }
 
-      const videoUrl = getVideoUrl(videoRecord[0].cloudinaryPublicId);
+      let videoUrl = '';
+      if (videoRecord[0].cloudinaryPublicId) {
+        videoUrl = getVideoUrl(videoRecord[0].cloudinaryPublicId);
+      } else if (videoRecord[0].downloadUrl) {
+        videoUrl = videoRecord[0].downloadUrl;
+      }
       
-      return NextResponse.json({ success: true, url: videoUrl, title: videoRecord[0].title });
+      return NextResponse.json({ 
+        success: true, 
+        url: videoUrl, 
+        title: videoRecord[0].title,
+        zoomId: videoRecord[0].zoomId 
+      });
     } catch (err) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

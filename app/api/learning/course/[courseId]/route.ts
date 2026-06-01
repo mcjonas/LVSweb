@@ -63,6 +63,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ courseId
           title: uploadedVideos[i].title,
           description: 'Watch this session to begin your journey.',
           cloudinaryPublicId: uploadedVideos[i].cloudinaryPublicId,
+          zoomId: uploadedVideos[i].zoomId,
           orderIndex: i,
           durationMinutes: 45
         });
@@ -89,10 +90,19 @@ export async function GET(req: Request, { params }: { params: Promise<{ courseId
         .orderBy(asc(lessons.orderIndex));
 
       // Resolve video URLs for lessons
-      const lessonsWithUrls = modLessons.map(lesson => ({
-        ...lesson,
-        videoUrl: lesson.cloudinaryPublicId ? getVideoUrl(lesson.cloudinaryPublicId) : null
-      }));
+      const lessonsWithUrls = modLessons.map(lesson => {
+        let videoUrl = null;
+        if (lesson.cloudinaryPublicId) {
+          videoUrl = getVideoUrl(lesson.cloudinaryPublicId);
+        } else if (lesson.zoomId) {
+          videoUrl = 'zoom'; 
+        }
+
+        return {
+          ...lesson,
+          videoUrl
+        };
+      });
 
       structuredModules.push({
         ...mod,
