@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { enrollments, users, bookings, courses } from '@/lib/schema';
 import { eq, ilike } from 'drizzle-orm';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
 export async function POST(req: Request) {
   try {
@@ -42,18 +43,22 @@ export async function POST(req: Request) {
     if (userRecord.length === 0) {
       // Create user with a random temporary password
       tempPassword = crypto.randomBytes(4).toString('hex'); // e.g., 'a1b2c3d4'
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(tempPassword, salt);
 
       const newUser = await db.insert(users).values({
         name,
         email,
-        passwordHash: tempPassword, // stored as plaintext (temp password)
+        passwordHash: hashedPassword,
         role: 'student',
       }).returning();
       userId = newUser[0].id;
     } else {
       userId = userRecord[0].id;
-      // Retrieve the existing stored password so it can be sent in the welcome email
-      tempPassword = userRecord[0].passwordHash || '';
+      // Note: We don't have the plaintext password for existing users.
+      // If we need to send it again, we'd need a reset mechanism.
+      // For now, we set tempPassword to empty for existing users.
+      tempPassword = '';
     }
 
     // 3. Create pending enrollment with correct courseId
@@ -61,6 +66,7 @@ export async function POST(req: Request) {
       userId,
       courseId,
       status: 'pending',
+      createdAt: new Date(),
     }).returning();
 
     // 4. Initialize Paystack payment
@@ -86,7 +92,7 @@ export async function POST(req: Request) {
           courseId,
           type: 'learning_platform',
           course,
-          tempPassword
+          tempPassword // This is only populated for new users
         }
       })
     });

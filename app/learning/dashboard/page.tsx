@@ -9,8 +9,14 @@ export default function LearningDashboard() {
   const [courses, setCourses] = useState<any[]>([]);
   const [error, setError] = useState('');
   const [studentName, setStudentName] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Detect mobile
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
     const token = localStorage.getItem('lvs_learning_token');
     if (!token) {
       window.location.href = '/learning/login';
@@ -47,6 +53,8 @@ export default function LearningDashboard() {
     };
 
     fetchCourses();
+
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const handleLogout = () => {
@@ -68,56 +76,143 @@ export default function LearningDashboard() {
     <div style={{ background: '#f5f5f5', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
 
-      <div style={{ flex: 1, padding: 'clamp(1.5rem, 4vw, 4rem) clamp(1rem, 4vw, 2rem)', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+      <div style={{
+        flex: 1,
+        padding: isMobile ? '1.2rem 0.8rem' : 'clamp(1.5rem, 4vw, 4rem) clamp(1rem, 4vw, 2rem)',
+        maxWidth: '1200px',
+        margin: '0 auto',
+        width: '100%'
+      }}>
 
         {/* Header row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', marginBottom: '2.5rem', flexWrap: 'wrap' }}>
-          <div>
-            <h1 style={{ color: 'var(--deep)', marginBottom: '0.3rem', fontSize: 'clamp(1.4rem, 4vw, 2rem)' }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: isMobile ? 'center' : 'flex-start',
+          gap: isMobile ? '0.6rem' : '1rem',
+          marginBottom: isMobile ? '1.5rem' : '2.5rem',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h1 style={{
+              color: 'var(--deep)',
+              marginBottom: '0.3rem',
+              fontSize: isMobile ? 'clamp(1.15rem, 5vw, 1.4rem)' : 'clamp(1.4rem, 4vw, 2rem)',
+              lineHeight: '1.3'
+            }}>
               {studentName ? `Welcome back, ${studentName}!` : 'My Learning Dashboard'}
             </h1>
-            <p style={{ color: 'var(--muted)', fontSize: '0.95rem' }}>Here are your enrolled courses.</p>
+            <p style={{ color: 'var(--muted)', fontSize: isMobile ? '0.85rem' : '0.95rem' }}>Here are your enrolled courses.</p>
           </div>
           <button
             onClick={handleLogout}
-            style={{ background: 'white', border: '1px solid #ddd', color: 'var(--muted)', padding: '0.5rem 1.2rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
+            style={{
+              background: 'white',
+              border: '1px solid #ddd',
+              color: 'var(--muted)',
+              padding: isMobile ? '0.45rem 0.9rem' : '0.5rem 1.2rem',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: isMobile ? '0.8rem' : '0.85rem',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              minHeight: '44px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
           >
             Log Out
           </button>
         </div>
 
-        {error && <div style={{ background: '#ffebee', color: '#c62828', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>{error}</div>}
+        {error && <div style={{ background: '#ffebee', color: '#c62828', padding: isMobile ? '0.8rem' : '1rem', borderRadius: '8px', marginBottom: '2rem', fontSize: isMobile ? '0.85rem' : '1rem' }}>{error}</div>}
 
         {courses.length === 0 ? (
-          <div style={{ background: '#fff', padding: 'clamp(2rem, 6vw, 3rem)', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎓</div>
-            <h2 style={{ color: 'var(--rose)', marginBottom: '1rem' }}>No active courses yet</h2>
-            <p style={{ color: 'var(--muted)', maxWidth: '500px', margin: '0 auto 2rem', lineHeight: '1.6' }}>
+          <div style={{
+            background: '#fff',
+            padding: isMobile ? '2rem 1.2rem' : 'clamp(2rem, 6vw, 3rem)',
+            borderRadius: '12px',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: isMobile ? '2.5rem' : '3rem', marginBottom: '1rem' }}>🎓</div>
+            <h2 style={{ color: 'var(--rose)', marginBottom: '1rem', fontSize: isMobile ? '1.1rem' : '1.3rem' }}>No active courses yet</h2>
+            <p style={{ color: 'var(--muted)', maxWidth: '500px', margin: '0 auto 2rem', lineHeight: '1.6', fontSize: isMobile ? '0.88rem' : '1rem' }}>
               When you enroll in a self-paced course, it will appear here along with your progress tracking and video lessons.
             </p>
-            <a href="/learning/courses" style={{ background: 'var(--deep)', color: 'white', padding: '0.8rem 2rem', borderRadius: '50px', textDecoration: 'none', fontWeight: 'bold', display: 'inline-block' }}>
+            <a href="/learning/courses" style={{ background: 'var(--deep)', color: 'white', padding: '0.8rem 2rem', borderRadius: '50px', textDecoration: 'none', fontWeight: 'bold', display: 'inline-block', fontSize: isMobile ? '0.9rem' : '1rem' }}>
               Browse Courses
             </a>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: '1.5rem' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
+            gap: isMobile ? '1rem' : '1.5rem'
+          }}>
             {courses.map((course, i) => (
-              <div key={i} style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: '1px solid rgba(123,63,160,0.1)', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ height: '140px', background: 'linear-gradient(135deg, var(--deep), var(--rose))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)', fontSize: '3rem' }}>
+              <div key={i} style={{
+                background: '#fff',
+                borderRadius: isMobile ? '10px' : '12px',
+                overflow: 'hidden',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+                border: '1px solid rgba(123,63,160,0.1)',
+                display: 'flex',
+                flexDirection: isMobile ? 'row' : 'column',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+              }}>
+                {/* Course gradient header/thumbnail */}
+                <div style={{
+                  height: isMobile ? 'auto' : '140px',
+                  width: isMobile ? '100px' : '100%',
+                  minHeight: isMobile ? '100px' : undefined,
+                  flexShrink: 0,
+                  background: 'linear-gradient(135deg, var(--deep), var(--rose))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--gold)',
+                  fontSize: isMobile ? '2rem' : '3rem'
+                }}>
                   🎓
                 </div>
-                <div style={{ padding: '1.2rem 1.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ background: 'var(--rose)', color: 'white', fontSize: '0.65rem', padding: '0.25rem 0.6rem', borderRadius: '4px', display: 'inline-block', marginBottom: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', alignSelf: 'flex-start' }}>
+                <div style={{
+                  padding: isMobile ? '0.85rem 1rem' : '1.2rem 1.5rem',
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minWidth: 0
+                }}>
+                  <div style={{ background: 'var(--rose)', color: 'white', fontSize: '0.65rem', padding: '0.25rem 0.6rem', borderRadius: '4px', display: 'inline-block', marginBottom: isMobile ? '0.5rem' : '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', alignSelf: 'flex-start' }}>
                     Active
                   </div>
-                  <h3 style={{ color: 'var(--deep)', marginBottom: '0.5rem', fontSize: '1.05rem', lineHeight: '1.4' }}>{course.title}</h3>
-                  <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: '1.2rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', flex: 1 }}>
+                  <h3 style={{
+                    color: 'var(--deep)',
+                    marginBottom: '0.4rem',
+                    fontSize: isMobile ? '0.95rem' : '1.05rem',
+                    lineHeight: '1.4',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical'
+                  }}>{course.title}</h3>
+                  <p style={{
+                    color: 'var(--muted)',
+                    fontSize: isMobile ? '0.8rem' : '0.85rem',
+                    marginBottom: isMobile ? '0.8rem' : '1.2rem',
+                    display: '-webkit-box',
+                    WebkitLineClamp: isMobile ? 1 : 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    flex: 1
+                  }}>
                     {course.description || 'Your premium self-paced learning material.'}
                   </p>
 
                   {/* Progress */}
-                  <div style={{ marginBottom: '1.2rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--muted)', marginBottom: '0.3rem' }}>
+                  <div style={{ marginBottom: isMobile ? '0.8rem' : '1.2rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: isMobile ? '0.72rem' : '0.78rem', color: 'var(--muted)', marginBottom: '0.3rem' }}>
                       <span>Lessons accessed</span>
                       <span style={{ fontWeight: 'bold', color: course.progressPercentage > 0 ? 'var(--rose)' : 'var(--muted)' }}>{course.progressPercentage || 0}%</span>
                     </div>
@@ -126,7 +221,20 @@ export default function LearningDashboard() {
                     </div>
                   </div>
 
-                  <a href={`/learning/course/${course.id}`} style={{ display: 'block', textAlign: 'center', background: 'var(--rose)', color: 'white', padding: '0.75rem', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem', transition: 'background 0.3s' }}>
+                  <a href={`/learning/course/${course.id}`} style={{
+                    display: 'block',
+                    textAlign: 'center',
+                    background: 'var(--rose)',
+                    color: 'white',
+                    padding: isMobile ? '0.65rem' : '0.75rem',
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    fontWeight: 'bold',
+                    fontSize: isMobile ? '0.82rem' : '0.9rem',
+                    transition: 'background 0.3s',
+                    minHeight: '44px',
+                    lineHeight: '1.6'
+                  }}>
                     {course.progressPercentage > 0 ? '▶ Continue Learning' : '▶ Start Course'}
                   </a>
                 </div>

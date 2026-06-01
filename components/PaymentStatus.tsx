@@ -10,7 +10,7 @@ function PaymentStatusContent() {
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Verifying your payment...');
-  const [courseId, setC] = useState<number | null>(null);
+  const [courseId, setCourseId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!reference) {
@@ -29,7 +29,9 @@ function PaymentStatusContent() {
           setMessage('Payment verified successfully!');
           if (data.token) {
             localStorage.setItem('lvs_learning_token', data.token);
-            setC(data.courseId);
+          }
+          if (data.courseId) {
+            setCourseId(data.courseId);
           }
         } else {
           setStatus('error');

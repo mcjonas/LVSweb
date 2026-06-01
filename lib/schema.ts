@@ -56,8 +56,11 @@ export const bookings = pgTable('bookings', {
 export const videos = pgTable('videos', {
   id: serial('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
-  cloudinaryPublicId: varchar('cloudinary_public_id', { length: 255 }).notNull(),
-  courseId: integer('course_id'), // Optional, to link to a specific course
+  zoomId: varchar('zoom_id', { length: 255 }), // Added for Zoom integration
+  downloadUrl: text('download_url'), // Added for direct Zoom download if needed
+  courseId: integer('course_id'),
+  moduleId: integer('module_id'),
+  lessonId: integer('lesson_id'),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -87,7 +90,7 @@ export const lessons = pgTable('lessons', {
   moduleId: integer('module_id').notNull(),
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description'),
-  cloudinaryPublicId: varchar('cloudinary_public_id', { length: 255 }),
+  zoomId: varchar('zoom_id', { length: 255 }), // Added for Zoom
   orderIndex: integer('order_index').default(0),
   durationMinutes: integer('duration_minutes').default(0),
   createdAt: timestamp('created_at').defaultNow(),

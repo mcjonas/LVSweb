@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
 export async function POST(req: Request) {
   try {
@@ -20,15 +21,15 @@ export async function POST(req: Request) {
 
     const user = userRecord[0];
 
-    // In a real app, use bcrypt.compare(password, user.passwordHash)
-    // Since we generated a temporary hex password string in the previous step, we just compare exactly.
-    if (user.passwordHash !== password) {
+    const isPasswordCorrect = await bcrypt.compare(password, user.passwordHash);
+
+    if (!isPasswordCorrect) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'fallback_secret',
+      process.env.JWT_SECRET!,
       { expiresIn: '30d' }
     );
 

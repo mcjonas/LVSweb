@@ -12,6 +12,7 @@ function VerifyContent() {
   const [message, setMessage] = useState('Verifying your enrollment...');
   const [token, setToken] = useState<string | null>(null);
   const [tempPassword, setTempPassword] = useState<string | null>(null);
+  const [courseId, setCourseId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!reference) {
@@ -31,6 +32,9 @@ function VerifyContent() {
           if (data.tempPassword) {
             setTempPassword(data.tempPassword);
           }
+          if (data.courseId) {
+            setCourseId(data.courseId);
+          }
           if (data.token) {
             setToken(data.token);
             // Clear any previous student session before saving the new token
@@ -49,6 +53,10 @@ function VerifyContent() {
 
     verifyPayment();
   }, [reference]);
+
+  // Determine the redirect destination — course page if courseId is known, otherwise dashboard
+  const dashboardHref = courseId ? `/learning/course/${courseId}` : '/learning/dashboard';
+  const dashboardLabel = courseId ? 'Start My Course' : 'Go to My Dashboard';
 
   return (
     <div style={{ background: '#f5f5f5', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
@@ -77,8 +85,8 @@ function VerifyContent() {
               </div>
             )}
             
-            <Link href="/learning/dashboard" style={{ display: 'inline-block', background: 'var(--rose)', color: 'white', padding: '1rem 2rem', borderRadius: '50px', textDecoration: 'none', fontWeight: 'bold', width: '100%' }}>
-              Go to My Dashboard
+            <Link href={dashboardHref} style={{ display: 'inline-block', background: 'var(--rose)', color: 'white', padding: '1rem 2rem', borderRadius: '50px', textDecoration: 'none', fontWeight: 'bold', width: '100%' }}>
+              {dashboardLabel}
             </Link>
           </>
         )}
@@ -105,3 +113,4 @@ export default function VerifyLearningEnrollment() {
     </Suspense>
   );
 }
+

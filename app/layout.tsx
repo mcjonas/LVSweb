@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import LenisProvider from '@/components/LenisProvider';
+import WhatsAppFloatingIcon from '@/components/WhatsAppFloatingIcon';
 
 export const metadata: Metadata = {
   title: 'Love Vibe Studio',
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LenisProvider>
           {children}
         </LenisProvider>
+        <WhatsAppFloatingIcon />
       </body>
     </html>
   );

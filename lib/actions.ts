@@ -4,6 +4,18 @@ import { db } from './db';
 import { enquiries, testimonials, courses, bookings } from './schema';
 import { desc, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { checkAuth } from './auth-utils';
+import { z } from 'zod';
+
+const CourseSchema = z.object({
+  title: z.string().min(3).max(255),
+  description: z.string().min(10),
+  duration: z.string().optional(),
+  priceSingleGHS: z.number().nonnegative().optional(),
+  priceSingleUSD: z.number().nonnegative().optional(),
+  priceCoupleGHS: z.number().nonnegative().optional(),
+  priceCoupleUSD: z.number().nonnegative().optional(),
+});
 
 export async function getCourses() {
   return db.select().from(courses).orderBy(desc(courses.createdAt));
@@ -23,8 +35,16 @@ export async function addCourse(data: {
   priceCoupleGHS?: number;
   priceCoupleUSD?: number;
 }) {
+  await checkAuth();
+  
+  // Validate input
+  const validated = CourseSchema.safeParse(data);
+  if (!validated.success) {
+    return { success: false, error: 'Invalid input data' };
+  }
+
   try {
-    await db.insert(courses).values(data);
+    await db.insert(courses).values(validated.data);
     revalidatePath('/');
     revalidatePath('/dashboard/courses');
     return { success: true };
@@ -35,6 +55,7 @@ export async function addCourse(data: {
 }
 
 export async function updateCourse(id: number, data: Partial<typeof courses.$inferInsert>) {
+  await checkAuth();
   try {
     await db.update(courses).set(data).where(eq(courses.id, id));
     revalidatePath('/');
@@ -47,6 +68,7 @@ export async function updateCourse(id: number, data: Partial<typeof courses.$inf
 }
 
 export async function deleteCourse(id: number) {
+  await checkAuth();
   try {
     await db.delete(courses).where(eq(courses.id, id));
     revalidatePath('/');
@@ -59,6 +81,7 @@ export async function deleteCourse(id: number) {
 }
 
 export async function getBookings() {
+  await checkAuth();
   return db.select().from(bookings).orderBy(desc(bookings.createdAt));
 }
 
@@ -130,6 +153,7 @@ export async function submitEnrollment(data: {
 }
 
 export async function deleteEnquiry(id: number) {
+  await checkAuth();
   try {
     await db.delete(enquiries).where(eq(enquiries.id, id));
     revalidatePath('/dashboard/enquiries');
@@ -142,6 +166,7 @@ export async function deleteEnquiry(id: number) {
 }
 
 export async function getEnquiries() {
+  await checkAuth();
   return db.select().from(enquiries).orderBy(desc(enquiries.createdAt));
 }
 
@@ -150,11 +175,13 @@ export async function getTestimonials() {
 }
 
 export async function getTestimonialById(id: number) {
+  await checkAuth();
   const [testimonial] = await db.select().from(testimonials).where(eq(testimonials.id, id));
   return testimonial;
 }
 
 export async function addTestimonial(data: Partial<typeof testimonials.$inferInsert>) {
+  await checkAuth();
   try {
     await db.insert(testimonials).values(data as typeof testimonials.$inferInsert);
     revalidatePath('/');
@@ -167,6 +194,7 @@ export async function addTestimonial(data: Partial<typeof testimonials.$inferIns
 }
 
 export async function updateTestimonial(id: number, data: Partial<typeof testimonials.$inferInsert>) {
+  await checkAuth();
   try {
     await db.update(testimonials).set(data).where(eq(testimonials.id, id));
     revalidatePath('/');
@@ -179,6 +207,7 @@ export async function updateTestimonial(id: number, data: Partial<typeof testimo
 }
 
 export async function deleteTestimonial(id: number) {
+  await checkAuth();
   try {
     await db.delete(testimonials).where(eq(testimonials.id, id));
     revalidatePath('/');
@@ -191,6 +220,7 @@ export async function deleteTestimonial(id: number) {
 }
 
 export async function getStats() {
+  await checkAuth();
   const allEnquiries = await db.select().from(enquiries);
   const allTestimonials = await db.select().from(testimonials);
   const allCourses = await db.select().from(courses);
