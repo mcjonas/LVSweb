@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { db } from '@/lib/db';
 import { videos, lessons, courses, modules } from '@/lib/schema';
 import { eq, ilike } from 'drizzle-orm';
+import { uploadVideoToCloudinary } from '@/lib/cloudinary';
 
 const ZOOM_WEBHOOK_SECRET_TOKEN = process.env.ZOOM_WEBHOOK_SECRET_TOKEN || '';
 
@@ -55,6 +56,17 @@ export async function POST(req: NextRequest) {
           ? `${videoFile.download_url}?access_token=${recordingObj.download_token}` 
           : videoFile.download_url;
 
+        // Step 1: Upload to Cloudinary for permanent storage
+        // This ensures the video never expires for the student
+        let cloudinaryPublicId = null;
+        try {
+          const uploadRes = await uploadVideoToCloudinary(downloadUrl, topic);
+          cloudinaryPublicId = uploadRes.public_id;
+          console.log(`Cloudinary upload successful for ${topic}: ${cloudinaryPublicId}`);
+        } catch (uploadError) {
+          console.error('Cloudinary auto-upload failed, falling back to Zoom URL:', uploadError);
+        }
+
         // Strategy: Match topic to Course/Lesson
         // 1. Try to find a lesson with this title
         const matchingLessons = await db.select().from(lessons).where(ilike(lessons.title, `%${topic}%`)).limit(1);
@@ -63,9 +75,12 @@ export async function POST(req: NextRequest) {
         if (matchingLessons.length > 0) {
           lessonId = matchingLessons[0].id;
           
-          // Link Zoom ID to the lesson for student access
+          // Link Zoom ID and Cloudinary ID to the lesson
           await db.update(lessons)
-            .set({ zoomId: zoomId.toString() })
+            .set({ 
+              zoomId: zoomId.toString(),
+              cloudinaryPublicId: cloudinaryPublicId
+            })
             .where(eq(lessons.id, lessonId));
         }
 
@@ -74,6 +89,7 @@ export async function POST(req: NextRequest) {
           title: topic,
           zoomId: zoomId.toString(),
           downloadUrl: downloadUrl,
+          cloudinaryPublicId: cloudinaryPublicId,
           lessonId: lessonId,
         });
 

@@ -33,7 +33,7 @@ function FormContent({ courses }: { courses: Course[] }) {
         priceCoupleGHS: c.priceCoupleGHS || 0,
       }))
     : [
-        { label: 'Pre- Marital Counselling', val: 'Pre-Marital Counselling', priceSingleGHS: 1500, priceCoupleGHS: 1500 },
+        { label: 'Pre- Marital Counselling', val: 'Pre-Marital Counselling', priceSingleGHS: 1500, priceCoupleGHS: 2500 },
         { label: 'Post- Marital Counselling', val: 'Post-Marital Counselling', priceSingleGHS: 1200, priceCoupleGHS: 2000 },
       ]; // Fallback
 

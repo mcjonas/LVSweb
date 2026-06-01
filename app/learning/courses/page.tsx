@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 // Using the same fallback courses from the main site
 const SELF_PACED_COURSES = [
-  { num: '01', title: 'Pre-Marital Counselling', duration: 'Flexible', fees: [{ type: 'Couple', ghs: 'GHS 1,500', usd: '$137' }] },
+  { num: '01', title: 'Pre-Marital Counselling', duration: 'Flexible', fees: [{ type: 'Single', ghs: 'GHS 1,500', usd: '$137' }, { type: 'Couple', ghs: 'GHS 2,500', usd: '$228' }] },
   { num: '02', title: 'Post-Marital Counselling', duration: 'Flexible', fees: [{ type: 'Single', ghs: 'GHS 1,200', usd: '$109' }, { type: 'Couple', ghs: 'GHS 2,000', usd: '$181' }] },
   { num: '03', title: 'Sex in Marriage', duration: 'Flexible', fees: [{ type: 'Single', ghs: 'GHS 1,500', usd: '$137' }, { type: 'Couple', ghs: 'GHS 2,500', usd: '$228' }] },
   { num: '04', title: 'Legal Advice on Marriage & Divorce', duration: 'Flexible', fees: [{ type: 'Single', ghs: 'GHS 1,500', usd: '$137' }, { type: 'Couple', ghs: 'GHS 2,500', usd: '$228' }] },

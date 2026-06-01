@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { courses, modules, lessons, enrollments, videos, progress } from '@/lib/schema';
-import { eq, asc, and } from 'drizzle-orm';
+import { eq, asc, and, inArray } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
 import { getVideoUrl } from '@/lib/cloudinary';
 
@@ -45,7 +45,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ courseId
     // Fetch Modules
     let courseModules = await db.select().from(modules).where(eq(modules.courseId, courseId)).orderBy(asc(modules.orderIndex));
 
-    // Auto-seed if completely empty so the user has something to see in Phase 3!
+    // Auto-seed if completely empty
     if (courseModules.length === 0) {
       const newModule = await db.insert(modules).values({
         courseId,
@@ -54,7 +54,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ courseId
       }).returning();
       courseModules = newModule;
 
-      // Check if course has any videos assigned and grab them
       const uploadedVideos = await db.select().from(videos).where(eq(videos.courseId, courseId)).limit(3);
 
       for (let i = 0; i < uploadedVideos.length; i++) {
@@ -69,7 +68,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ courseId
         });
       }
 
-      // If they had no uploaded videos, we'll insert a fallback lesson (without a real video)
       if (uploadedVideos.length === 0) {
         await db.insert(lessons).values({
           moduleId: newModule[0].id,
@@ -89,13 +87,21 @@ export async function GET(req: Request, { params }: { params: Promise<{ courseId
         .where(eq(lessons.moduleId, mod.id))
         .orderBy(asc(lessons.orderIndex));
 
+      // Resolve Zoom URLs if any
+      const zoomIds = modLessons.map(l => l.zoomId).filter(Boolean) as string[];
+      const relatedVideos = zoomIds.length > 0 
+        ? await db.select().from(videos).where(inArray(videos.zoomId, zoomIds))
+        : [];
+      
+      const videoMap = new Map(relatedVideos.map(v => [v.zoomId, v.downloadUrl]));
+
       // Resolve video URLs for lessons
       const lessonsWithUrls = modLessons.map(lesson => {
         let videoUrl = null;
         if (lesson.cloudinaryPublicId) {
           videoUrl = getVideoUrl(lesson.cloudinaryPublicId);
         } else if (lesson.zoomId) {
-          videoUrl = 'zoom'; 
+          videoUrl = videoMap.get(lesson.zoomId) || null;
         }
 
         return {
