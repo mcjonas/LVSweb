@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
       const { object: recordingObj } = payload;
       const topic = recordingObj.topic || 'Zoom Recording';
       const zoomId = recordingObj.id; // Zoom Meeting ID
+      const hostEmail = recordingObj.host_email;
       
       const videoFile = recordingObj.recording_files?.find(
         (file: any) => file.file_type === 'MP4'
@@ -57,7 +58,6 @@ export async function POST(req: NextRequest) {
           : videoFile.download_url;
 
         // Step 1: Upload to Cloudinary for permanent storage
-        // This ensures the video never expires for the student
         let cloudinaryPublicId = null;
         try {
           const uploadRes = await uploadVideoToCloudinary(downloadUrl, topic);
@@ -67,11 +67,13 @@ export async function POST(req: NextRequest) {
           console.error('Cloudinary auto-upload failed, falling back to Zoom URL:', uploadError);
         }
 
-        // Strategy: Match topic to Course/Lesson
+        // Strategy: Match topic to Course/Lesson OR match host email to enrollment
+        let courseId = null;
+        let lessonId = null;
+
         // 1. Try to find a lesson with this title
         const matchingLessons = await db.select().from(lessons).where(ilike(lessons.title, `%${topic}%`)).limit(1);
         
-        let lessonId = null;
         if (matchingLessons.length > 0) {
           lessonId = matchingLessons[0].id;
           
@@ -82,30 +84,19 @@ export async function POST(req: NextRequest) {
               cloudinaryPublicId: cloudinaryPublicId
             })
             .where(eq(lessons.id, lessonId));
+
+          // Also try to find the courseId from the module
+          const moduleRecord = await db.select().from(modules).where(eq(modules.id, matchingLessons[0].moduleId)).limit(1);
+          if (moduleRecord.length > 0) {
+            courseId = moduleRecord[0].courseId;
+          }
         }
 
-        // 2. Save to general videos table for audit/backup
-        await db.insert(videos).values({
-          title: topic,
-          zoomId: zoomId.toString(),
-          downloadUrl: downloadUrl,
-          cloudinaryPublicId: cloudinaryPublicId,
-          lessonId: lessonId,
-        });
-
-        console.log(`Successfully processed Zoom recording: ${topic}`);
-      }
-      
-      return NextResponse.json({ status: 'success' });
-    }
-
-    return NextResponse.json({ status: 'ignored' });
-  } catch (error) {
-    console.error('Zoom webhook error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
-}
-nrollment (active or pending)
+        // 2. Fallback: If no lesson match, try matching host email to a student enrollment
+        if (!courseId && hostEmail) {
+          const userRecord = await db.select().from(users).where(eq(users.email, hostEmail)).limit(1);
+          if (userRecord.length > 0) {
+            // Find most recent enrollment (active or pending)
             const enrollmentRecord = await db.select()
               .from(enrollments)
               .where(eq(enrollments.userId, userRecord[0].id))
@@ -133,7 +124,7 @@ nrollment (active or pending)
           downloadUrl: downloadUrl,
           cloudinaryPublicId: cloudinaryPublicId,
           lessonId: lessonId,
-          courseId: courseId, // Now we have courseId!
+          courseId: courseId,
         });
 
         console.log(`Successfully processed Zoom recording: ${topic} for course: ${courseId}`);

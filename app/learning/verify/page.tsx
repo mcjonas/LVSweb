@@ -13,8 +13,10 @@ function VerifyContent() {
   const [token, setToken] = useState<string | null>(null);
   const [tempPassword, setTempPassword] = useState<string | null>(null);
   const [courseId, setCourseId] = useState<number | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (!reference) {
       setStatus('error');
       setMessage('No transaction reference found.');
@@ -115,9 +117,3 @@ export default function VerifyLearningEnrollment() {
     </Suspense>
   );
 }
-
-VerifyContent />
-    </Suspense>
-  );
-}
-

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { courses, modules, lessons, enrollments, videos, progress } from '@/lib/schema';
-import { eq, asc, and, inArray } from 'drizzle-orm';
+import { eq, asc, and, inArray, ilike } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
 import { getVideoUrl } from '@/lib/cloudinary';
 
