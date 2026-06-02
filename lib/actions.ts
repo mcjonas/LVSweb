@@ -15,6 +15,7 @@ const CourseSchema = z.object({
   priceSingleUSD: z.number().nonnegative().optional(),
   priceCoupleGHS: z.number().nonnegative().optional(),
   priceCoupleUSD: z.number().nonnegative().optional(),
+  matchKeywords: z.string().optional(),
 });
 
 export async function getCourses() {
@@ -34,6 +35,7 @@ export async function addCourse(data: {
   priceSingleUSD?: number;
   priceCoupleGHS?: number;
   priceCoupleUSD?: number;
+  matchKeywords?: string;
 }) {
   await checkAuth();
   

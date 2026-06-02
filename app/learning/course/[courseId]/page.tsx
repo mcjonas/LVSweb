@@ -6,6 +6,18 @@ import Footer from '@/components/public/Footer/Footer';
 import Link from 'next/link';
 import './classroom.css';
 
+// ── Types ────────────────────────────────────────────────────────────────────
+
+interface ZoomRecording {
+  id:              number;
+  title:           string;
+  durationMinutes: number;
+  playUrl:         string;
+  synchronizedAt:  string;
+}
+
+// ── Component ────────────────────────────────────────────────────────────────
+
 export default function CourseClassroom({ params }: { params: Promise<{ courseId: string }> }) {
   const resolvedParams = use(params);
   const [loading, setLoading] = useState(true);
@@ -16,41 +28,43 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
   const [accessedLessons, setAccessedLessons] = useState<number[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Tracks which lesson IDs have already been posted to /api/learning/progress
+  // ── P1: Zoom recordings fetched from /api/recordings/course/[courseId] ──
+  const [recordings, setRecordings] = useState<ZoomRecording[]>([]);
+  const [activeRecording, setActiveRecording] = useState<ZoomRecording | null>(null);
+  const [recordingsTab, setRecordingsTab] = useState(false); // false=lessons, true=recordings
+
   const postedIds = useRef<Set<number>>(new Set());
 
-  // Auto-track: called whenever a lesson is selected
+  // ── Select a course lesson and track progress ─────────────────────────────
   const selectLesson = useCallback(async (lesson: any) => {
     setActiveLesson(lesson);
+    setActiveRecording(null);
+    setRecordingsTab(false);
     setSidebarOpen(false);
 
-    // Already posted this session — skip
     if (postedIds.current.has(lesson.id)) return;
-
     postedIds.current.add(lesson.id);
-    // Optimistically update UI
     setAccessedLessons(prev => Array.from(new Set([...prev, lesson.id])));
 
     const token = localStorage.getItem('lvs_learning_token');
     if (!token) return;
-
     try {
-      const res = await fetch('/api/learning/progress', {
+      await fetch('/api/learning/progress', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ lessonId: lesson.id }),
       });
-      if (!res.ok) {
-        console.warn('Progress tracking failed for lesson', lesson.id);
-      }
-    } catch (err) {
-      console.warn('Progress tracking error:', err);
-    }
+    } catch { /* non-critical */ }
   }, []);
 
+  // ── Select a Zoom recording ───────────────────────────────────────────────
+  const selectRecording = useCallback((rec: ZoomRecording) => {
+    setActiveRecording(rec);
+    setActiveLesson(null);
+    setSidebarOpen(false);
+  }, []);
+
+  // ── Initial data fetch ────────────────────────────────────────────────────
   useEffect(() => {
     setMounted(true);
     const token = localStorage.getItem('lvs_learning_token');
@@ -59,42 +73,59 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
       return;
     }
 
-    const fetchCourseData = async () => {
+    const courseId = resolvedParams.courseId;
+
+    const fetchAll = async () => {
       try {
-        const res = await fetch(`/api/learning/course/${resolvedParams.courseId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
+        // Fetch course structure (modules + lessons) in parallel with recordings
+        const [courseRes, recRes] = await Promise.all([
+          fetch(`/api/learning/course/${courseId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`/api/recordings/course/${courseId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
-        if (res.ok && data.success) {
-          setCourse(data.course);
+        const courseData = await courseRes.json();
+        const recData = await recRes.json();
 
-          const prevAccessed: number[] = data.completedLessonIds || [];
+        if (courseRes.ok && courseData.success) {
+          setCourse(courseData.course);
+          const prevAccessed: number[] = courseData.completedLessonIds || [];
           setAccessedLessons(prevAccessed);
-          // Seed postedIds so we don't re-post already-tracked lessons
           prevAccessed.forEach(id => postedIds.current.add(id));
 
-          // Auto-select first lesson
-          const firstLesson = data.course.modules?.[0]?.lessons?.[0];
-          if (firstLesson) {
-            // Set active without re-tracking if already tracked
-            setActiveLesson(firstLesson);
-            if (!postedIds.current.has(firstLesson.id)) {
-              postedIds.current.add(firstLesson.id);
-              setAccessedLessons(prev => Array.from(new Set([...prev, firstLesson.id])));
-              fetch('/api/learning/progress', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ lessonId: firstLesson.id }),
-              }).catch(() => {});
+          // Auto-select first available item:
+          // Prefer first Zoom recording if available, otherwise first lesson
+          if (recData.success && recData.recordings?.length > 0) {
+            setRecordings(recData.recordings);
+            setActiveRecording(recData.recordings[0]);
+            setRecordingsTab(true);
+          } else {
+            const firstLesson = courseData.course.modules?.[0]?.lessons?.[0];
+            if (firstLesson) {
+              setActiveLesson(firstLesson);
+              if (!postedIds.current.has(firstLesson.id)) {
+                postedIds.current.add(firstLesson.id);
+                setAccessedLessons(prev => Array.from(new Set([...prev, firstLesson.id])));
+                fetch('/api/learning/progress', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                  body: JSON.stringify({ lessonId: firstLesson.id }),
+                }).catch(() => {});
+              }
             }
           }
         } else {
-          setError(data.error || 'Failed to load classroom');
+          setError(courseData.error || 'Failed to load classroom');
         }
+
+        // Populate recordings even if course fetch was the primary
+        if (recData.success && recData.recordings?.length > 0) {
+          setRecordings(recData.recordings);
+        }
+
       } catch {
         setError('Error loading classroom');
       } finally {
@@ -102,17 +133,20 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
       }
     };
 
-    fetchCourseData();
+    fetchAll();
   }, [resolvedParams.courseId]);
 
+  // ── Derived values ────────────────────────────────────────────────────────
   const totalLessons = course?.modules?.reduce(
-    (acc: number, m: any) => acc + (m.lessons?.length || 0), 0
+    (acc: number, m: any) => acc + (m.lessons?.length || 0), 0,
   ) || 0;
   const progressPct = totalLessons > 0
     ? Math.round((accessedLessons.length / totalLessons) * 100)
     : 0;
 
-  /* ─── Loading ─── */
+  const activeItem = activeRecording || activeLesson;
+
+  /* ─── Loading ─────────────────────────────────────────────────────────── */
   if (!mounted || loading) return (
     <div className="classroomRoot">
       <Navbar />
@@ -122,13 +156,16 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
     </div>
   );
 
-  /* ─── Error ─── */
+  /* ─── Error ───────────────────────────────────────────────────────────── */
   if (error || !course) return (
     <div className="classroomRoot">
       <Navbar />
       <div style={{ flex: 1, padding: '4rem 2rem', textAlign: 'center' }}>
         <h2 style={{ color: '#c62828' }}>{error || 'Course not found'}</h2>
-        <Link href="/learning/dashboard" style={{ display: 'inline-block', marginTop: '2rem', background: 'var(--deep)', color: 'white', padding: '0.8rem 2rem', borderRadius: '50px', textDecoration: 'none' }}>
+        <Link href="/learning/dashboard" style={{
+          display: 'inline-block', marginTop: '2rem', background: 'var(--deep)',
+          color: 'white', padding: '0.8rem 2rem', borderRadius: '50px', textDecoration: 'none',
+        }}>
           Back to Dashboard
         </Link>
       </div>
@@ -136,7 +173,7 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
     </div>
   );
 
-  /* ─── Main UI ─── */
+  /* ─── Main UI ─────────────────────────────────────────────────────────── */
   return (
     <div className="classroomRoot">
       <Navbar />
@@ -152,20 +189,22 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
               onClick={() => setSidebarOpen(o => !o)}
               aria-label="Toggle lesson list"
             >
-              📋 Lessons
+              📋 Content
             </button>
           </div>
 
-          {/* Progress */}
-          <div className="progressBar">
-            <div className="progressLabel">
-              <span>{accessedLessons.length} of {totalLessons} lessons accessed</span>
-              <span>{progressPct}%</span>
+          {/* Progress (lesson-based) */}
+          {totalLessons > 0 && (
+            <div className="progressBar">
+              <div className="progressLabel">
+                <span>{accessedLessons.length} of {totalLessons} lessons accessed</span>
+                <span>{progressPct}%</span>
+              </div>
+              <div className="progressTrack">
+                <div className="progressFill" style={{ width: `${progressPct}%` }} />
+              </div>
             </div>
-            <div className="progressTrack">
-              <div className="progressFill" style={{ width: `${progressPct}%` }} />
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -178,18 +217,58 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
       {/* ── Body ── */}
       <div className="classroomBody">
 
-        {/* Video Panel */}
+        {/* ── Video Panel ── */}
         <div className="videoPanel">
-          {activeLesson ? (
+          {activeRecording ? (
+            /* ── Zoom Cloud Recording (P1) ── */
+            <>
+              <div className="videoWrapper">
+                <iframe
+                  key={activeRecording.id}
+                  src={activeRecording.playUrl}
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                  allow="autoplay; fullscreen"
+                  allowFullScreen
+                  title={activeRecording.title}
+                />
+              </div>
+              <div className="lessonInfo">
+                <div className="lessonInfoRow">
+                  <div>
+                    <h2 className="lessonInfoTitle">{activeRecording.title}</h2>
+                    <p className="lessonDescription" style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
+                      Zoom Cloud Recording · {activeRecording.durationMinutes > 0 ? `${activeRecording.durationMinutes} min` : 'Duration not set'}
+                    </p>
+                  </div>
+                  <div className="lessonBadge">
+                    <span className="badgeAccessed">🎥 Zoom Recording</span>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : activeLesson ? (
+            /* ── Legacy lesson video ── */
             <>
               <div className="videoWrapper">
                 {activeLesson.videoUrl ? (
-                  <video
-                    key={activeLesson.id}
-                    src={activeLesson.videoUrl}
-                    controls
-                    controlsList="nodownload"
-                  />
+                  activeLesson.videoUrl.includes('zoom.us') ? (
+                    <iframe
+                      key={activeLesson.id}
+                      src={activeLesson.videoUrl}
+                      style={{ width: '100%', height: '100%', border: 'none' }}
+                      allow="autoplay; fullscreen"
+                      allowFullScreen
+                      title={activeLesson.title}
+                    />
+                  ) : (
+                    <video
+                      key={activeLesson.id}
+                      src={activeLesson.videoUrl}
+                      controls
+                      controlsList="nodownload"
+                      onContextMenu={e => e.preventDefault()}
+                    />
+                  )
                 ) : (
                   <div className="videoPlaceholder">
                     <span>🎬</span>
@@ -197,7 +276,6 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
                   </div>
                 )}
               </div>
-
               <div className="lessonInfo">
                 <div className="lessonInfoRow">
                   <div>
@@ -218,46 +296,116 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
           ) : (
             <div className="emptyVideo">
               <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>📺</span>
-              Select a lesson from the list to start watching.
+              Select a recording or lesson from the list to start watching.
             </div>
           )}
         </div>
 
-        {/* Sidebar */}
+        {/* ── Sidebar ── */}
         <div className={`sidebar${sidebarOpen ? ' open' : ''}`}>
           <div className="sidebarHeader">
             <h3>Course Content</h3>
-            <p>{totalLessons} lesson{totalLessons !== 1 ? 's' : ''}</p>
+            {recordings.length > 0 && (
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <button
+                  onClick={() => setRecordingsTab(false)}
+                  style={{
+                    flex: 1, padding: '0.35rem', borderRadius: '6px', border: 'none',
+                    background: !recordingsTab ? 'var(--deep)' : '#eee',
+                    color: !recordingsTab ? 'white' : '#333',
+                    cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600,
+                  }}
+                >
+                  📚 Lessons ({totalLessons})
+                </button>
+                <button
+                  onClick={() => setRecordingsTab(true)}
+                  style={{
+                    flex: 1, padding: '0.35rem', borderRadius: '6px', border: 'none',
+                    background: recordingsTab ? 'var(--deep)' : '#eee',
+                    color: recordingsTab ? 'white' : '#333',
+                    cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600,
+                  }}
+                >
+                  🎥 Recordings ({recordings.length})
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="sidebarScroll">
-            {course.modules?.map((mod: any, modIdx: number) => (
-              <div key={modIdx} className="moduleGroup">
-                <div className="moduleTitle">{mod.title}</div>
-                {mod.lessons?.map((lesson: any, lesIdx: number) => {
-                  const isActive = activeLesson?.id === lesson.id;
-                  const isAccessed = accessedLessons.includes(lesson.id);
+
+            {/* ── Recordings Tab ── */}
+            {recordingsTab && recordings.length > 0 ? (
+              <div className="moduleGroup">
+                <div className="moduleTitle">Zoom Cloud Recordings</div>
+                {recordings.map((rec, idx) => {
+                  const isActive = activeRecording?.id === rec.id;
                   return (
                     <div
-                      key={lesIdx}
+                      key={rec.id}
                       className={`lessonItem${isActive ? ' active' : ''}`}
-                      onClick={() => selectLesson(lesson)}
+                      onClick={() => selectRecording(rec)}
                       role="button"
                       tabIndex={0}
-                      onKeyDown={e => e.key === 'Enter' && selectLesson(lesson)}
+                      onKeyDown={e => e.key === 'Enter' && selectRecording(rec)}
                     >
-                      <span className="lessonIcon">
-                        {isAccessed ? '✅' : isActive ? '▶' : '📺'}
-                      </span>
+                      <span className="lessonIcon">{isActive ? '▶' : '🎥'}</span>
                       <div>
-                        <div className="lessonItemTitle">{lesson.title}</div>
-                        <div className="lessonItemDuration">{lesson.durationMinutes} min</div>
+                        <div className="lessonItemTitle">
+                          {rec.title || `Recording ${idx + 1}`}
+                        </div>
+                        <div className="lessonItemDuration">
+                          {rec.durationMinutes > 0 ? `${rec.durationMinutes} min` : 'Zoom Session'}
+                        </div>
                       </div>
                     </div>
                   );
                 })}
               </div>
-            ))}
+            ) : (
+
+              /* ── Lessons Tab (or no recordings yet) ── */
+              <>
+                {recordings.length === 0 && (
+                  <div style={{
+                    padding: '1rem', background: '#fff8e1', borderRadius: '8px',
+                    margin: '0.75rem', fontSize: '0.82rem', color: '#7b5800', lineHeight: 1.5,
+                  }}>
+                    <strong>🎬 Recordings</strong><br />
+                    Your Zoom session recordings will appear here once they&apos;re processed — usually within 5 minutes of the session ending.
+                  </div>
+                )}
+
+                {course.modules?.map((mod: any, modIdx: number) => (
+                  <div key={modIdx} className="moduleGroup">
+                    <div className="moduleTitle">{mod.title}</div>
+                    {mod.lessons?.map((lesson: any, lesIdx: number) => {
+                      const isActive = activeLesson?.id === lesson.id;
+                      const isAccessed = accessedLessons.includes(lesson.id);
+                      return (
+                        <div
+                          key={lesIdx}
+                          className={`lessonItem${isActive ? ' active' : ''}`}
+                          onClick={() => selectLesson(lesson)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={e => e.key === 'Enter' && selectLesson(lesson)}
+                        >
+                          <span className="lessonIcon">
+                            {isAccessed ? '✅' : isActive ? '▶' : '📺'}
+                          </span>
+                          <div>
+                            <div className="lessonItemTitle">{lesson.title}</div>
+                            <div className="lessonItemDuration">{lesson.durationMinutes} min</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
       </div>

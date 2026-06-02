@@ -83,9 +83,9 @@ function VerifyContent() {
             
             {tempPassword && (
               <div style={{ background: '#fdf8f5', border: '1px solid var(--gold)', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>
-                <p style={{ fontSize: '0.9rem', color: 'var(--deep)', marginBottom: '0.5rem' }}>Please save your login password for future access:</p>
+                <p style={{ fontSize: '0.9rem', color: 'var(--deep)', marginBottom: '0.5rem' }}>Please save your login password:</p>
                 <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--rose)', letterSpacing: '2px' }}>{tempPassword}</div>
-                <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: '0.5rem' }}>(You can use this to log in on other devices)</p>
+                <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: '0.5rem' }}>(Use this password whenever you want to log in to learn at your self-paced learning)</p>
               </div>
             )}
             

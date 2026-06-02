@@ -125,7 +125,19 @@ export default function BookingsClient({ initialBookings }: { initialBookings: B
                     <div>{b.email}</div>
                     <small>{b.phone}</small>
                   </td>
-                  <td><span className={styles.badge}>{b.course}</span></td>
+                  <td>
+                    <span className={styles.badge}>{b.course}</span>
+                    {b.bookingDate && b.bookingTime && (
+                      <div style={{ marginTop: '4px', fontSize: '0.8rem', color: '#7b3fa0', fontWeight: '600' }}>
+                        📅 {new Date(b.bookingDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at {b.bookingTime}
+                      </div>
+                    )}
+                    {b.notes && (
+                      <div style={{ marginTop: '6px', fontSize: '0.75rem', color: '#555', fontStyle: 'italic', maxWidth: '250px', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                        📝 {b.notes}
+                      </div>
+                    )}
+                  </td>
                   <td>{b.amount ? `GHS ${b.amount.toLocaleString()}` : '-'}</td>
                   <td>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>

@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 
 export async function POST(req: NextRequest) {
   try {
-    const { title, cloudinaryPublicId, zoomId, downloadUrl } = await req.json();
+    const { title, cloudinaryPublicId, zoomId, downloadUrl, passcode } = await req.json();
 
     if (!title || (!cloudinaryPublicId && !zoomId)) {
       return NextResponse.json({ error: 'Title and either Cloudinary ID or Zoom ID are required' }, { status: 400 });
@@ -16,7 +16,8 @@ export async function POST(req: NextRequest) {
       title,
       cloudinaryPublicId,
       zoomId,
-      downloadUrl
+      downloadUrl,
+      passcode
     });
 
     revalidatePath('/dashboard/videos');

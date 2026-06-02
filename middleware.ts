@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // 1. Rate Limiting for sensitive routes
-  if (path.startsWith('/api/auth') || path.startsWith('/api/learning/auth') || path.startsWith('/api/paystack/initialize')) {
+  if (path.startsWith('/api/auth') || path.startsWith('/api/learning/auth') || path.startsWith('/api/paystack/initialize') || path.startsWith('/api/learning/paystack/initialize')) {
     // Standard way to get IP in Next.js middleware (works on Vercel and standard Node)
     const forwarded = request.headers.get('x-forwarded-for');
     const ip = forwarded ? forwarded.split(',')[0] : 'anonymous';
@@ -60,5 +60,6 @@ export const config = {
     '/api/auth/:path*',
     '/api/learning/auth/:path*',
     '/api/paystack/initialize',
+    '/api/learning/paystack/initialize',
   ],
 };

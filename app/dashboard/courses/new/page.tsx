@@ -23,6 +23,7 @@ export default function NewCoursePage() {
       priceSingleUSD: parseInt(fd.get('priceSingleUSD') as string) || 0,
       priceCoupleGHS: parseInt(fd.get('priceCoupleGHS') as string) || 0,
       priceCoupleUSD: parseInt(fd.get('priceCoupleUSD') as string) || 0,
+      matchKeywords: fd.get('matchKeywords') as string,
     });
 
     if (result.success) {
@@ -59,6 +60,10 @@ export default function NewCoursePage() {
             <div className={styles.field}>
               <label>Duration</label>
               <input name="duration" type="text" placeholder="e.g. 3 Months" />
+            </div>
+            <div className={styles.field}>
+              <label>Match Keywords (comma-separated, e.g. PMC, Pre-Marital)</label>
+              <input name="matchKeywords" type="text" placeholder="e.g. PMC, Pre-Marital" />
             </div>
           </div>
 

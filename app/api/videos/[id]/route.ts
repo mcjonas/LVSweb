@@ -28,17 +28,18 @@ export async function GET(
       }
 
       let videoUrl = '';
-      if (videoRecord[0].cloudinaryPublicId) {
-        videoUrl = getVideoUrl(videoRecord[0].cloudinaryPublicId);
-      } else if (videoRecord[0].downloadUrl) {
+      if (videoRecord[0].downloadUrl) {
         videoUrl = videoRecord[0].downloadUrl;
+      } else if (videoRecord[0].cloudinaryPublicId) {
+        videoUrl = getVideoUrl(videoRecord[0].cloudinaryPublicId);
       }
       
       return NextResponse.json({ 
         success: true, 
         url: videoUrl, 
         title: videoRecord[0].title,
-        zoomId: videoRecord[0].zoomId 
+        zoomId: videoRecord[0].zoomId,
+        passcode: videoRecord[0].passcode
       });
     } catch (err) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

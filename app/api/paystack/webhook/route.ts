@@ -112,12 +112,42 @@ async function sendConfirmationEmail(booking: Booking) {
     },
   });
 
-  const mailOptions = {
-    from: `"Love Vibe Studios" <${user}>`,
-    to: booking.email,
-    cc: 'lovevibestudio726@gmail.com', // CC the studio
-    subject: 'Course Enrollment Confirmation - Love Vibe Studios',
-    html: `
+  const isSpecialBooking = !!(booking.bookingDate && booking.bookingTime);
+  const formattedDate = booking.bookingDate 
+    ? new Date(booking.bookingDate).toLocaleDateString(undefined, { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      })
+    : '';
+
+  const subject = isSpecialBooking 
+    ? "Booking Confirmed! – Love Vibe Studio 💛" 
+    : 'Course Enrollment Confirmation - Love Vibe Studios';
+
+  const html = isSpecialBooking
+    ? `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #2D1B4E;">
+        <h2 style="color: #7B3FA0; text-align: center;">Booking Confirmed! 🎉</h2>
+        <p>Dear ${booking.name},</p>
+        <p>Your payment has been successfully verified, and your booking is now locked in!</p>
+        
+        <div style="background-color: #faf8ff; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px dashed #7b3fa0;">
+          <p style="margin: 5px 0;">📌 <strong>Service:</strong> ${booking.course}</p>
+          <p style="margin: 5px 0;">📅 <strong>Date:</strong> ${formattedDate}</p>
+          <p style="margin: 5px 0;">⏰ <strong>Time:</strong> ${booking.bookingTime}</p>
+        </div>
+
+        <p>We look forward to meeting you! Our team will contact you shortly with the next steps or coordinates for your session.</p>
+        <p>If you have any questions, feel free to reach us at +233 503 915 160.</p>
+        <br/>
+        <p>With love,</p>
+        <p><strong>Love Vibe Studio 💛</strong></p>
+        <p>Adenta, Accra</p>
+      </div>
+    `
+    : `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #2D1B4E;">
         <h2 style="color: #7B3FA0;">Payment Successful!</h2>
         <p>Dear ${booking.name},</p>
@@ -128,7 +158,14 @@ async function sendConfirmationEmail(booking: Booking) {
         <p>Best regards,</p>
         <p>Love Vibe Studios Team</p>
       </div>
-    `,
+    `;
+
+  const mailOptions = {
+    from: `"Love Vibe Studio" <${user}>`,
+    to: booking.email,
+    cc: 'lovevibestudio726@gmail.com', // CC the studio
+    subject,
+    html,
   };
 
   await transporter.sendMail(mailOptions);

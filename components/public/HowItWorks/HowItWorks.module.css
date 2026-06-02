@@ -1,4 +1,7 @@
-.how { background: #EDE5FA; padding: 7rem 4rem; }
+.how {
+  background: #f7f4fc;
+  padding: 7rem 4rem;
+}
 
 .header {
   text-align: center;
@@ -10,7 +13,7 @@
   font-size: 0.7rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--rose);
+  color: var(--gold);
   margin-bottom: 1rem;
 }
 
@@ -18,40 +21,216 @@
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(2rem, 4vw, 3.2rem);
   font-weight: 300;
+  color: var(--deep);
   line-height: 1.2;
 }
 
-.header h2 em { font-style: italic; color: var(--rose); }
+.header h2 em {
+  font-style: italic;
+  color: var(--gold);
+}
 
-.steps {
+.subtitle {
+  margin-top: 1rem;
+  color: var(--muted);
+  line-height: 1.8;
+  font-size: 0.95rem;
+}
+
+.grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
   max-width: 1100px;
-  margin: 0 auto;
+  margin: 0 auto 4rem;
 }
 
-.step { text-align: center; padding: 1.5rem 1rem; }
+.card {
+  background: white;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 6px;
+  padding: 2rem;
+  position: relative;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
 
-.num {
+.card:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--gold);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(212, 175, 55, 0.1);
+}
+
+.durationBadge {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--deep);
+  padding: 0.3rem 0.8rem;
+  border-radius: 2px;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.card h3 {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 4rem;
+  font-size: 1.8rem;
   font-weight: 300;
-  color: rgba(123, 63, 160, 0.25);
-  line-height: 1;
-  margin-bottom: 1rem;
+  color: var(--deep);
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+  margin-top: 1.5rem;
 }
 
-.step h3 {
+.rate {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 1.3rem;
+  font-size: 2.2rem;
   font-weight: 400;
-  margin-bottom: 0.7rem;
+  color: var(--gold);
+  margin: 0.5rem 0 1rem;
 }
 
-.step p { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+.details {
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+  padding-top: 0.8rem;
+  margin-top: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 0.85rem;
+  gap: 1rem;
+}
+
+.detailRow span {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 2px; /* slight offset to align with text line height */
+}
+
+.detailRow strong {
+  font-size: 0.88rem;
+  color: var(--deep);
+  text-align: right;
+  line-height: 1.4;
+}
+
+.btn {
+  display: block;
+  text-align: center;
+  margin-top: 1rem;
+  padding: 0.8rem;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.3s;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: var(--gold);
+  background: transparent;
+}
+
+.btn:hover {
+  background: var(--gold);
+  color: var(--deep);
+  border-color: var(--gold);
+}
+
+/* Info Block Layout */
+.infoBlock {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 6px;
+  padding: 3rem;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 3.5rem;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.infoTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.infoIcon {
+  color: var(--gold);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.infoCol h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: var(--deep);
+  margin: 0;
+}
+
+.availabilityList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.availabilityList li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  font-size: 0.95rem;
+}
+
+.availabilityList li:last-child {
+  border-bottom: none;
+}
+
+.availabilityList li strong {
+  color: var(--deep);
+  font-size: 0.85rem;
+}
+
+.availabilityList li span {
+  color: var(--gold);
+  font-weight: 500;
+  font-size: 0.88rem;
+}
+
+.procedureText {
+  font-size: 0.95rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
 
 @media (max-width: 900px) {
-  .how { padding: 4rem 1.5rem; }
-  .steps { grid-template-columns: 1fr 1fr; }
+  .how {
+    padding: 4rem 1.5rem;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .infoBlock {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
 }

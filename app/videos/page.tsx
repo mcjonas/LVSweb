@@ -16,7 +16,7 @@ function VideosContent() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeVideo, setActiveVideo] = useState<{ url: string, title: string } | null>(null);
+  const [activeVideo, setActiveVideo] = useState<{ url: string, title: string, passcode?: string } | null>(null);
 
   useEffect(() => {
     if (!token) {
@@ -49,7 +49,7 @@ function VideosContent() {
       const res = await fetch(`/api/videos/${id}?token=${token}`);
       const data = await res.json();
       if (data.success) {
-        setActiveVideo({ url: data.url, title: data.title });
+        setActiveVideo({ url: data.url, title: data.title, passcode: data.passcode });
       } else {
         alert(data.error || 'Could not load video.');
       }
@@ -77,15 +77,31 @@ function VideosContent() {
       
       {activeVideo && (
         <div style={{ marginBottom: '3rem', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
-          <div style={{ padding: '1rem', background: '#222', color: '#fff', fontWeight: 'bold' }}>
-            Now Playing: {activeVideo.title}
+          <div style={{ padding: '1rem', background: '#222', color: '#fff', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Now Playing: {activeVideo.title}</span>
+            {activeVideo.passcode && (
+              <span style={{ fontSize: '0.9rem', background: 'rgba(255,255,255,0.1)', padding: '0.3rem 0.8rem', borderRadius: '4px' }}>
+                Passcode: <code style={{ color: '#ffeb3b' }}>{activeVideo.passcode}</code>
+              </span>
+            )}
           </div>
-          <video 
-            src={activeVideo.url} 
-            controls 
-            autoPlay
-            style={{ width: '100%', maxHeight: '600px', display: 'block' }} 
-          />
+          {activeVideo.url.includes('zoom.us') && !activeVideo.url.includes('.mp4') ? (
+            <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+              <iframe
+                src={activeVideo.url.replace('/rec/play/', '/rec/share/')}
+                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                allow="autoplay; fullscreen"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <video 
+              src={activeVideo.url} 
+              controls 
+              autoPlay
+              style={{ width: '100%', maxHeight: '600px', display: 'block' }} 
+            />
+          )}
         </div>
       )}
 

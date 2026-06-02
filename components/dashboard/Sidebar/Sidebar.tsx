@@ -10,6 +10,7 @@ const NAV = [
   { href: '/dashboard/bookings', label: 'Bookings', icon: '📅' },
   { href: '/dashboard/courses', label: 'Courses', icon: '📚' },
   { href: '/dashboard/videos', label: 'Videos', icon: '🎥' },
+  { href: '/dashboard/recordings', label: 'Recordings', icon: '🎬' },
   { href: '/dashboard/testimonials', label: 'Testimonials', icon: '💬' },
 ];
 
