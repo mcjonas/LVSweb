@@ -12,6 +12,7 @@ function PaymentStatusContent() {
   const [message, setMessage] = useState('Verifying your payment...');
   const [courseId, setCourseId] = useState<number | null>(null);
   const [tempPassword, setTempPassword] = useState<string | null>(null);
+  const [isSpecialBooking, setIsSpecialBooking] = useState(false);
 
   useEffect(() => {
     if (!reference) {
@@ -36,6 +37,9 @@ function PaymentStatusContent() {
           }
           if (data.tempPassword) {
             setTempPassword(data.tempPassword);
+          }
+          if (data.isSpecialBooking) {
+            setIsSpecialBooking(true);
           }
         } else {
           setStatus('error');
@@ -116,27 +120,37 @@ function PaymentStatusContent() {
               boxShadow: '0 10px 20px rgba(123, 63, 160, 0.3)',
             }}>✓</div>
             <h2 style={{ color: 'var(--deep)', fontSize: '2.5rem', marginBottom: '1.5rem', fontWeight: '600' }}>Thank You!</h2>
-            <p style={{ color: 'var(--muted)', fontSize: '1.1rem', marginBottom: '1.5rem', lineHeight: '1.6' }}>
-              Your enrollment in our course is now confirmed. We've received your payment and secured your spot. A confirmation email has been sent to your inbox.
-            </p>
-            {tempPassword && (
-              <div style={{ background: '#fdf8f5', border: '1px solid var(--gold)', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', textAlign: 'center' }}>
-                <p style={{ fontSize: '0.9rem', color: 'var(--deep)', marginBottom: '0.5rem' }}>Please save your login password:</p>
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--rose)', letterSpacing: '2px' }}>{tempPassword}</div>
-                <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: '0.5rem' }}>(Use this password whenever you want to log in to learn at your self-paced learning)</p>
-              </div>
+            {isSpecialBooking ? (
+              <p style={{ color: 'var(--muted)', fontSize: '1.1rem', marginBottom: '2.5rem', lineHeight: '1.6' }}>
+                Your private session booking is now confirmed. We&apos;ve received your payment and locked in your slot. A confirmation email has been sent to your mail.
+              </p>
+            ) : (
+              <>
+                <p style={{ color: 'var(--muted)', fontSize: '1.1rem', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+                  Your enrollment in our course is now confirmed. We've received your payment and secured your spot. A confirmation email has been sent to your inbox.
+                </p>
+                {tempPassword && (
+                  <div style={{ background: '#fdf8f5', border: '1px solid var(--gold)', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', textAlign: 'center' }}>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--deep)', marginBottom: '0.5rem' }}>Please save your login password:</p>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--rose)', letterSpacing: '2px' }}>{tempPassword}</div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: '0.5rem' }}>(Use this password whenever you want to log in to learn at your self-paced learning)</p>
+                  </div>
+                )}
+              </>
             )}
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link href="/" className="btn-ghost" style={{ padding: '1rem 2rem' }}>
                 Return Home
               </Link>
-              <button
-                onClick={handleContinueToLearning}
-                className="btn-primary"
-                style={{ padding: '1rem 2rem', background: 'var(--rose)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'none' }}
-              >
-                Start Learning Now
-              </button>
+              {!isSpecialBooking && (
+                <button
+                  onClick={handleContinueToLearning}
+                  className="btn-primary"
+                  style={{ padding: '1rem 2rem', background: 'var(--rose)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'none' }}
+                >
+                  Start Learning Now
+                </button>
+              )}
             </div>
           </>
         )}

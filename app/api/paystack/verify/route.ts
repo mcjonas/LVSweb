@@ -264,7 +264,8 @@ export async function GET(req: Request) {
           message: 'Payment verified and database updated',
           token,
           courseId,
-          tempPassword: finalTempPassword
+          tempPassword: finalTempPassword,
+          isSpecialBooking
         });
       } else {
         console.error('[Verify API] No bookingId found in transaction metadata');
