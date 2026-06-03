@@ -13,6 +13,7 @@ const TUE_FRI_SLOTS = [
   { val: '13:00', label: '1:00 PM - 2:00 PM' },
   { val: '14:00', label: '2:00 PM - 3:00 PM' },
   { val: '15:00', label: '3:00 PM - 4:00 PM' },
+  { val: '16:00', label: '4:00 PM - 5:00 PM' },
 ];
 
 const SAT_SLOTS = [
@@ -21,6 +22,7 @@ const SAT_SLOTS = [
   { val: '14:00', label: '2:00 PM - 3:00 PM' },
   { val: '15:00', label: '3:00 PM - 4:00 PM' },
   { val: '16:00', label: '4:00 PM - 5:00 PM' },
+  { val: '17:00', label: '5:00 PM - 6:00 PM' },
 ];
 
 const BOOKING_OPTIONS = [
