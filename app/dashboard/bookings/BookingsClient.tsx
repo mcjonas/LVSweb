@@ -129,7 +129,7 @@ export default function BookingsClient({ initialBookings }: { initialBookings: B
                     <span className={styles.badge}>{b.course}</span>
                     {b.bookingDate && b.bookingTime && (
                       <div style={{ marginTop: '4px', fontSize: '0.8rem', color: '#7b3fa0', fontWeight: '600' }}>
-                        📅 {new Date(b.bookingDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at {b.bookingTime}
+                        📅 {new Date(b.bookingDate).toLocaleDateString(undefined, { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' })} at {b.bookingTime}
                       </div>
                     )}
                     {b.notes && (

@@ -283,7 +283,7 @@ function FormContent({ courses }: { courses: Course[] }) {
                 onClick={() => setStep(2)}
                 disabled={!formData.course}
               >
-                Next: Select Slot
+                Next
               </button>
             </div>
           </div>
@@ -353,7 +353,7 @@ function FormContent({ courses }: { courses: Course[] }) {
 
                 {selectedDateStr && (
                   <div>
-                    <h3 className={styles.timeSectionTitle}>Available Hours for {new Date(selectedDateStr).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>
+                    <h3 className={styles.timeSectionTitle}>Available Hours for {new Date(selectedDateStr).toLocaleDateString(undefined, { timeZone: 'UTC', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>
                     {timeSlots.length > 0 ? (
                       <div className={styles.timeSlotsGrid}>
                         {timeSlots.map((slot) => {
@@ -391,7 +391,7 @@ function FormContent({ courses }: { courses: Course[] }) {
                 onClick={() => setStep(3)}
                 disabled={!selectedDateStr || !selectedTime}
               >
-                Next: Fill Details
+                Next
               </button>
             </div>
           </div>
@@ -507,7 +507,7 @@ function FormContent({ courses }: { courses: Course[] }) {
                 onClick={() => setStep(4)}
                 disabled={!formData.name || !formData.email || !formData.phone || !formData.dob || !formData.gender || !formData.country || !formData.maritalStatus}
               >
-                Next: Review & Pay
+                Next
               </button>
             </div>
           </div>
@@ -525,7 +525,7 @@ function FormContent({ courses }: { courses: Course[] }) {
               </div>
               <div className={styles.summaryRow}>
                 <span>Date:</span>
-                <strong>{new Date(selectedDateStr).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</strong>
+                <strong>{new Date(selectedDateStr).toLocaleDateString(undefined, { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' })}</strong>
               </div>
               <div className={styles.summaryRow}>
                 <span>Time Slot:</span>
@@ -565,7 +565,7 @@ function FormContent({ courses }: { courses: Course[] }) {
                 onClick={handleSubmit}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Initializing Payment...' : 'Proceed to Paystack'}
+                {isSubmitting ? 'Initializing...' : 'Proceed to Pay'}
               </button>
             </div>
           </div>

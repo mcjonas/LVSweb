@@ -196,7 +196,8 @@ export async function GET(req: Request) {
               : "Welcome to Love Vibe Studios Learning Platform!";
 
             const formattedDate = bookingRecord.bookingDate 
-              ? new Date(bookingRecord.bookingDate).toLocaleDateString(undefined, { 
+              ? new Date(bookingRecord.bookingDate).toLocaleDateString('en-US', { 
+                  timeZone: 'UTC',
                   weekday: 'long', 
                   year: 'numeric', 
                   month: 'long', 

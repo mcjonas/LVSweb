@@ -114,7 +114,8 @@ async function sendConfirmationEmail(booking: Booking) {
 
   const isSpecialBooking = !!(booking.bookingDate && booking.bookingTime);
   const formattedDate = booking.bookingDate 
-    ? new Date(booking.bookingDate).toLocaleDateString(undefined, { 
+    ? new Date(booking.bookingDate).toLocaleDateString('en-US', { 
+        timeZone: 'UTC',
         weekday: 'long', 
         year: 'numeric', 
         month: 'long', 

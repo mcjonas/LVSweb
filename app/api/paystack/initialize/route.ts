@@ -108,7 +108,8 @@ export async function POST(req: Request) {
           },
         });
 
-        const formattedDate = new Date(bookingDate).toLocaleDateString(undefined, { 
+        const formattedDate = new Date(bookingDate).toLocaleDateString('en-US', { 
+          timeZone: 'UTC',
           weekday: 'long', 
           year: 'numeric', 
           month: 'long', 
