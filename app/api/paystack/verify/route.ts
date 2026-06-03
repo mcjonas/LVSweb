@@ -99,36 +99,39 @@ export async function GET(req: Request) {
           }
         }
 
-        // 4. Student account upsert & password generation
+        // 4. Student account upsert & password generation (always generate for enrollments)
         const userRecord = await db
           .select()
           .from(users)
-          .where(eq(users.email, bookingRecord.email))
+          .where(ilike(users.email, bookingRecord.email))
           .limit(1);
 
         let userId: number;
-        let finalTempPassword: string | null = null;
+        const tempPassword = crypto.randomBytes(4).toString('hex'); // e.g. "a1b2c3d4"
+        const hashedPassword = await bcrypt.hash(tempPassword, 10);
+        const finalTempPassword = tempPassword;
 
         if (userRecord.length === 0) {
           // New user — create with hashed generated password
-          const tempPassword = crypto.randomBytes(4).toString('hex'); // e.g. "a1b2c3d4"
-          const hashedPassword = await bcrypt.hash(tempPassword, 10);
           const [newUser] = await db
             .insert(users)
             .values({ 
               name: bookingRecord.name, 
-              email: bookingRecord.email, 
+              email: bookingRecord.email.toLowerCase().trim(), 
               passwordHash: hashedPassword, 
               role: 'student' 
             })
             .returning({ id: users.id });
           userId = newUser.id;
-          finalTempPassword = tempPassword;
           console.log(`[Verify API] Created new student user: ${bookingRecord.email}`);
         } else {
-          // Existing user — do not change password
+          // Existing user — update password to the new temp password
           userId = userRecord[0].id;
-          console.log(`[Verify API] Existing student user: ${bookingRecord.email} (password kept)`);
+          await db
+            .update(users)
+            .set({ passwordHash: hashedPassword })
+            .where(eq(users.id, userId));
+          console.log(`[Verify API] Updated password for existing student user: ${bookingRecord.email}`);
         }
 
         // Fetch full user record to be safe

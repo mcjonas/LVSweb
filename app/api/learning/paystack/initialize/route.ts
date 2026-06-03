@@ -53,26 +53,34 @@ export async function POST(req: Request) {
     const userRecord = await db
       .select()
       .from(users)
-      .where(eq(users.email, email))
+      .where(ilike(users.email, email))
       .limit(1);
 
     let userId: number;
-    let tempPassword: string | null = null;
+    const tempPassword = crypto.randomBytes(4).toString('hex'); // e.g. "a1b2c3d4"
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
     if (userRecord.length === 0) {
       // New user — create with hashed generated password
-      tempPassword = crypto.randomBytes(4).toString('hex'); // e.g. "a1b2c3d4"
-      const hashedPassword = await bcrypt.hash(tempPassword, 10);
       const [newUser] = await db
         .insert(users)
-        .values({ name, email, passwordHash: hashedPassword, role: 'student' })
+        .values({ 
+          name, 
+          email: email.toLowerCase().trim(), 
+          passwordHash: hashedPassword, 
+          role: 'student' 
+        })
         .returning({ id: users.id });
       userId = newUser.id;
       console.log(`[LMS Init] Created new student user: ${email}`);
     } else {
-      // Existing user — do not update password
+      // Existing user — update password
       userId = userRecord[0].id;
-      console.log(`[LMS Init] Existing student: ${email} (password kept)`);
+      await db
+        .update(users)
+        .set({ passwordHash: hashedPassword })
+        .where(eq(users.id, userId));
+      console.log(`[LMS Init] Updated password for existing student: ${email}`);
     }
 
     // ── 3. Create pending enrollment ──
