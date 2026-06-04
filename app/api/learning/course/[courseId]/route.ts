@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { courses, modules, lessons, enrollments, videos, progress, recordings } from '@/lib/schema';
 import { eq, asc, and, inArray, ilike } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
+import { getZoomAccessToken } from '@/lib/zoom/api';
 // Zoom-only: no Cloudinary import needed
 
 export async function GET(req: Request, { params }: { params: Promise<{ courseId: string }> }) {
@@ -228,6 +229,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ courseId
         ? await db.select().from(recordings).where(inArray(recordings.zoomMeetingId, zoomIds))
         : [];
 
+      // Get a fresh S2S access token to generate secure video URLs
+      let zoomToken = '';
+      try {
+        zoomToken = await getZoomAccessToken();
+      } catch (tokenErr) {
+        console.error('[Learning Course API] Failed to fetch Zoom access token:', tokenErr);
+      }
+
       // Build map of zoomId -> url
       const videoMap = new Map<string, string>();
       for (const v of relatedVideos) {
@@ -236,8 +245,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ courseId
         }
       }
       for (const r of relatedRecordings) {
-        if (r.zoomMeetingId && r.playUrl) {
-          videoMap.set(r.zoomMeetingId, r.playUrl);
+        if (r.zoomMeetingId) {
+          if (r.downloadUrl && zoomToken) {
+            const secureUrl = `${r.downloadUrl}${r.downloadUrl.includes('?') ? '&' : '?'}access_token=${zoomToken}`;
+            videoMap.set(r.zoomMeetingId, secureUrl);
+          } else if (r.playUrl) {
+            videoMap.set(r.zoomMeetingId, r.playUrl);
+          }
         }
       }
 

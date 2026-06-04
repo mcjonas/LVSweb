@@ -17,6 +17,7 @@ import { recordings } from '@/lib/schema';
 import { eq, desc } from 'drizzle-orm';
 import { canAccessCourseRecordings } from '@/lib/recordings/access-control';
 import { logRecordingAccess } from '@/lib/logging/audit';
+import { getZoomAccessToken } from '@/lib/zoom/api';
 
 export async function GET(
   req: NextRequest,
@@ -75,6 +76,7 @@ export async function GET(
         title:           recordings.title,
         durationMinutes: recordings.durationMinutes,
         playUrl:         recordings.playUrl,
+        downloadUrl:     recordings.downloadUrl,
         synchronizedAt:  recordings.synchronizedAt,
         createdAt:       recordings.createdAt,
       })
@@ -82,15 +84,39 @@ export async function GET(
       .where(eq(recordings.courseId, courseId))
       .orderBy(desc(recordings.synchronizedAt));
 
+    // Get a fresh S2S access token to generate secure video URLs
+    let zoomToken = '';
+    try {
+      zoomToken = await getZoomAccessToken();
+    } catch (tokenErr) {
+      console.error('[Recordings API] Failed to fetch Zoom access token:', tokenErr);
+    }
+
+    const processedRecordings = courseRecordings.map(rec => {
+      let videoUrl = '';
+      if (rec.downloadUrl && zoomToken) {
+        videoUrl = `${rec.downloadUrl}${rec.downloadUrl.includes('?') ? '&' : '?'}access_token=${zoomToken}`;
+      }
+      return {
+        id:              rec.id,
+        title:           rec.title,
+        durationMinutes: rec.durationMinutes,
+        playUrl:         rec.playUrl,
+        videoUrl, // secure direct MP4 stream URL
+        synchronizedAt:  rec.synchronizedAt,
+        createdAt:       rec.createdAt,
+      };
+    });
+
     console.log(
-      `[Recordings API] User ${userId} fetched ${courseRecordings.length} recordings for course ${courseId}`,
+      `[Recordings API] User ${userId} fetched ${processedRecordings.length} recordings for course ${courseId}`,
     );
 
     return NextResponse.json({
       success:    true,
       courseId,
-      recordings: courseRecordings,
-      total:      courseRecordings.length,
+      recordings: processedRecordings,
+      total:      processedRecordings.length,
     });
 
   } catch (error) {

@@ -13,6 +13,7 @@ interface ZoomRecording {
   title:           string;
   durationMinutes: number;
   playUrl:         string;
+  videoUrl?:       string;
   synchronizedAt:  string;
 }
 
@@ -223,14 +224,24 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
             /* ── Zoom Cloud Recording (P1) ── */
             <>
               <div className="videoWrapper">
-                <iframe
-                  key={activeRecording.id}
-                  src={activeRecording.playUrl}
-                  style={{ width: '100%', height: '100%', border: 'none' }}
-                  allow="autoplay; fullscreen"
-                  allowFullScreen
-                  title={activeRecording.title}
-                />
+                {activeRecording.videoUrl ? (
+                  <video
+                    key={activeRecording.id}
+                    src={activeRecording.videoUrl}
+                    controls
+                    controlsList="nodownload"
+                    onContextMenu={e => e.preventDefault()}
+                  />
+                ) : (
+                  <iframe
+                    key={activeRecording.id}
+                    src={activeRecording.playUrl}
+                    style={{ width: '100%', height: '100%', border: 'none' }}
+                    allow="autoplay; fullscreen"
+                    allowFullScreen
+                    title={activeRecording.title}
+                  />
+                )}
               </div>
               <div className="lessonInfo">
                 <div className="lessonInfoRow">
@@ -251,7 +262,7 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
             <>
               <div className="videoWrapper">
                 {activeLesson.videoUrl ? (
-                  activeLesson.videoUrl.includes('zoom.us') ? (
+                  activeLesson.videoUrl.includes('zoom.us') && !activeLesson.videoUrl.includes('access_token') ? (
                     <iframe
                       key={activeLesson.id}
                       src={activeLesson.videoUrl}
