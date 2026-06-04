@@ -68,37 +68,68 @@ export async function GET(req: Request) {
 
     const id = Number(enrollmentId);
 
-    // ── Activate enrollment ──
-    await db
-      .update(enrollments)
-      .set({ status: 'active', paymentReference: reference })
-      .where(eq(enrollments.id, id));
-
-    // ── Update booking ──
-    if (bookingId) {
-      await db
-        .update(bookings)
-        .set({
-          status: 'paid',
-          paymentStatus: 'paid',
-          paymentReference: reference,
-          paymentTimestamp: new Date(transaction.paid_at || Date.now()),
-        })
-        .where(eq(bookings.id, Number(bookingId)));
-    }
-
-    // ── Fetch user for token + email ──
+    // ── Fetch enrollment record ──
     const [enrollmentRecord] = await db
       .select()
       .from(enrollments)
       .where(eq(enrollments.id, id))
       .limit(1);
 
+    if (!enrollmentRecord) {
+      return NextResponse.json({ success: false, message: 'Enrollment record not found' });
+    }
+
+    const alreadyActive = enrollmentRecord.status === 'active';
+
+    if (!alreadyActive) {
+      // ── Activate enrollment ──
+      await db
+        .update(enrollments)
+        .set({ status: 'active', paymentReference: reference })
+        .where(eq(enrollments.id, id));
+
+      // ── Update booking ──
+      if (bookingId) {
+        await db
+          .update(bookings)
+          .set({
+            status: 'paid',
+            paymentStatus: 'paid',
+            paymentReference: reference,
+            paymentTimestamp: new Date(transaction.paid_at || Date.now()),
+          })
+          .where(eq(bookings.id, Number(bookingId)));
+      }
+    }
+
+    // ── Fetch user for token + email ──
     const [userRecord] = await db
       .select()
       .from(users)
       .where(eq(users.id, enrollmentRecord.userId))
       .limit(1);
+
+    if (!userRecord) {
+      return NextResponse.json({ success: false, message: 'User record not found' });
+    }
+
+    // ── Sync user's name to checkout booking name if they mismatch ──
+    if (bookingId) {
+      const [bookingRecord] = await db
+        .select()
+        .from(bookings)
+        .where(eq(bookings.id, Number(bookingId)))
+        .limit(1);
+      if (bookingRecord && bookingRecord.name && userRecord.name !== bookingRecord.name) {
+        const oldName = userRecord.name;
+        await db
+          .update(users)
+          .set({ name: bookingRecord.name })
+          .where(eq(users.id, userRecord.id));
+        userRecord.name = bookingRecord.name;
+        console.log(`[LMS Verify] Updated name for user ${userRecord.email} from "${oldName}" to "${bookingRecord.name}"`);
+      }
+    }
 
     // ── Generate JWT for auto-login ──
     const jwtSecret = process.env.JWT_SECRET;
@@ -117,11 +148,11 @@ export async function GET(req: Request) {
       { expiresIn: '7d' },
     );
 
-    // ── Send welcome email (non-blocking) ──
+    // ── Send welcome email (non-blocking, only if not already active to prevent duplicates) ──
     const loginUrl =
       `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.lovevibestudio.com'}/learning/login`;
 
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    if (!alreadyActive && process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
       try {
         const smtpPort = Number(process.env.SMTP_PORT) || 465;
         const transporter = nodemailer.createTransport({
@@ -167,9 +198,12 @@ export async function GET(req: Request) {
       } catch (mailError) {
         console.error('[LMS Verify] Email send error:', mailError);
       }
+    } else if (alreadyActive) {
+      console.log('[LMS Verify] Enrollment was already active — welcome email skipped to prevent duplication');
     } else {
       console.warn('[LMS Verify] SMTP credentials not set — welcome email skipped');
     }
+
 
     return NextResponse.json({
       success:      true,
