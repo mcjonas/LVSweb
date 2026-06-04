@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import styles from './bookings.module.css';
 import { Booking } from '@/lib/schema';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 export default function BookingsClient({ initialBookings }: { initialBookings: Booking[] }) {
   const [filterCourse, setFilterCourse] = useState('');
@@ -28,31 +28,65 @@ export default function BookingsClient({ initialBookings }: { initialBookings: B
     return true;
   });
 
-  const exportToExcel = () => {
-    const data = filteredBookings.map(b => {
-      const date = b.createdAt ? new Date(b.createdAt).toLocaleDateString() : '';
-      const time = b.createdAt ? new Date(b.createdAt).toLocaleTimeString() : '';
-      const payStatus = (b.paymentStatus === 'success' || b.paymentStatus === 'paid') ? 'Paid' : b.paymentStatus === 'failed' ? 'Failed' : 'Pending';
-      const payTime = b.paymentTimestamp ? new Date(b.paymentTimestamp).toLocaleTimeString() : '';
-      
-      return {
-        Date: date,
-        Time: time,
-        Name: b.name || '',
-        Email: b.email || '',
-        Phone: b.phone || '',
-        Course: b.course || '',
-        Amount: b.amount ? b.amount : '',
-        'Payment Status': payStatus,
-        'Payment Time': payTime
-      };
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Bookings');
+
+    worksheet.columns = [
+      { header: 'Date',           key: 'date',          width: 15 },
+      { header: 'Time',           key: 'time',          width: 12 },
+      { header: 'Name',           key: 'name',          width: 25 },
+      { header: 'Email',          key: 'email',         width: 30 },
+      { header: 'Phone',          key: 'phone',         width: 18 },
+      { header: 'Course',         key: 'course',        width: 35 },
+      { header: 'Amount',         key: 'amount',        width: 12 },
+      { header: 'Payment Status', key: 'paymentStatus', width: 18 },
+      { header: 'Payment Time',   key: 'paymentTime',   width: 15 },
+    ];
+
+    // Style header row
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern', pattern: 'solid',
+      fgColor: { argb: 'FF107C41' },
+    };
+    worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+
+    for (const b of filteredBookings) {
+      const createdAt = b.createdAt ? new Date(b.createdAt) : null;
+      const payStatus =
+        b.paymentStatus === 'success' || b.paymentStatus === 'paid' ? 'Paid'
+        : b.paymentStatus === 'failed' ? 'Failed'
+        : 'Pending';
+
+      worksheet.addRow({
+        date:          createdAt ? createdAt.toLocaleDateString() : '',
+        time:          createdAt ? createdAt.toLocaleTimeString() : '',
+        name:          b.name || '',
+        email:         b.email || '',
+        phone:         b.phone || '',
+        course:        b.course || '',
+        amount:        b.amount ?? '',
+        paymentStatus: payStatus,
+        paymentTime:   b.paymentTimestamp
+          ? new Date(b.paymentTimestamp).toLocaleTimeString()
+          : '',
+      });
+    }
+
+    // Write to buffer and trigger browser download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
-    
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Bookings');
-    
-    XLSX.writeFile(workbook, `bookings_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bookings_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (

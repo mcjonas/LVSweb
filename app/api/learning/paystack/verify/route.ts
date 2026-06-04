@@ -4,6 +4,7 @@ import { enrollments, users, bookings } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
+import { escHtml } from '@/lib/email-utils';
 
 export async function GET(req: Request) {
   try {
@@ -100,6 +101,11 @@ export async function GET(req: Request) {
       .limit(1);
 
     // ── Generate JWT for auto-login ──
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('[LMS Verify] JWT_SECRET environment variable is not configured');
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
     const token = jwt.sign(
       {
         userId: userRecord.id,
@@ -107,8 +113,8 @@ export async function GET(req: Request) {
         name:   userRecord.name,
         role:   userRecord.role,
       },
-      process.env.JWT_SECRET || 'fallback_secret',
-      { expiresIn: '30d' },
+      jwtSecret,
+      { expiresIn: '7d' },
     );
 
     // ── Send welcome email (non-blocking) ──
@@ -135,18 +141,18 @@ export async function GET(req: Request) {
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
               <h2 style="color: #7b3fa0; text-align: center;">Welcome to Your Course!</h2>
-              <p>Hello ${userRecord.name},</p>
+              <p>Hello ${escHtml(userRecord.name)},</p>
               <p>Thank you for enrolling in our self-paced programme. Your payment was successful and your student account has been activated.</p>
               <div style="background-color: #f9f3fc; padding: 15px; border-radius: 8px; margin: 20px 0;">
                 <h3 style="margin-top: 0; color: #333;">Your Login Credentials</h3>
-                <p><strong>Email:</strong> ${userRecord.email}</p>
+                <p><strong>Email:</strong> ${escHtml(userRecord.email)}</p>
                 ${tempPassword
-                  ? `<p><strong>Your Password:</strong> <span style="font-size:1.2rem; font-weight:bold; color:#c62828; letter-spacing:2px;">${tempPassword}</span></p>
+                  ? `<p><strong>Your Password:</strong> <span style="font-size:1.2rem; font-weight:bold; color:#c62828; letter-spacing:2px;">${escHtml(tempPassword)}</span></p>
                      <p style="font-size:0.85rem; color:#666;">Please save this password — it should be used whenever you want to log in to learn at your self-paced learning.</p>`
                   : '<p><strong>Password:</strong> Use the password you set previously.</p>'}
               </div>
               <p style="text-align: center; margin: 30px 0;">
-                <a href="${loginUrl}"
+                <a href="${escHtml(loginUrl)}"
                    style="background-color: #d4af37; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
                   Login to Learning Dashboard
                 </a>

@@ -27,13 +27,34 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: '30d' }
-    );
+    const accessSecret  = process.env.JWT_SECRET;
+    const refreshSecret = process.env.REFRESH_TOKEN_SECRET;
 
-    return NextResponse.json({ success: true, token });
+    if (!accessSecret) {
+      console.error('[Login] JWT_SECRET is not configured');
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+
+    const tokenPayload = { userId: user.id, email: user.email, name: user.name, role: user.role };
+
+    // Short-lived access token (7 days)
+    const token = jwt.sign(tokenPayload, accessSecret, { expiresIn: '7d' });
+
+    const response = NextResponse.json({ success: true, token });
+
+    // Long-lived refresh token in httpOnly cookie (30 days) — requires REFRESH_TOKEN_SECRET
+    if (refreshSecret) {
+      const refreshToken = jwt.sign(tokenPayload, refreshSecret, { expiresIn: '30d' });
+      response.cookies.set('lms_refresh', refreshToken, {
+        httpOnly: true,
+        secure:   true,
+        sameSite: 'strict',
+        maxAge:   60 * 60 * 24 * 30, // 30 days
+        path:     '/api/learning/auth',
+      });
+    }
+
+    return response;
   } catch (error) {
     console.error('Error logging in student:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

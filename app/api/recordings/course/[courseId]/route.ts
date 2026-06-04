@@ -36,11 +36,17 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('[Recordings API] JWT_SECRET environment variable is not configured');
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+
     let decoded: { userId: number };
     try {
       decoded = jwt.verify(
         authHeader.split(' ')[1],
-        process.env.JWT_SECRET || 'fallback_secret',
+        jwtSecret,
       ) as { userId: number };
     } catch {
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });

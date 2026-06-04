@@ -18,6 +18,28 @@ const CourseSchema = z.object({
   matchKeywords: z.string().optional(),
 });
 
+const EnquirySchema = z.object({
+  firstName: z.string().min(1).max(100),
+  lastName:  z.string().min(1).max(100),
+  email:     z.string().email(),
+  phone:     z.string().max(50).optional(),
+  program:   z.string().max(200).optional(),
+  message:   z.string().max(5000).optional(),
+});
+
+const EnrollmentSchema = z.object({
+  name:          z.string().min(1).max(255),
+  email:         z.string().email(),
+  phone:         z.string().min(1).max(50),
+  dob:           z.string().max(50).optional(),
+  gender:        z.string().max(50).optional(),
+  country:       z.string().max(100).optional(),
+  maritalStatus: z.string().max(100).optional(),
+  course:        z.string().min(1).max(255),
+  type:          z.string().max(100),
+  amount:        z.number().positive(),
+});
+
 export async function getCourses() {
   return db.select().from(courses).orderBy(desc(courses.createdAt));
 }
@@ -58,8 +80,15 @@ export async function addCourse(data: {
 
 export async function updateCourse(id: number, data: Partial<typeof courses.$inferInsert>) {
   await checkAuth();
+
+  // Validate the fields being updated (partial)
+  const validated = CourseSchema.partial().safeParse(data);
+  if (!validated.success) {
+    return { success: false, error: 'Invalid update data' };
+  }
+
   try {
-    await db.update(courses).set(data).where(eq(courses.id, id));
+    await db.update(courses).set(validated.data).where(eq(courses.id, id));
     revalidatePath('/');
     revalidatePath('/dashboard/courses');
     return { success: true };
@@ -95,21 +124,27 @@ export async function submitEnquiry(data: {
   program?: string;
   message?: string;
 }) {
+  // Validate input
+  const validated = EnquirySchema.safeParse(data);
+  if (!validated.success) {
+    return { success: false, error: 'Invalid enquiry data' };
+  }
+
   try {
     // Insert into enquiries table
-    const [enquiry] = await db.insert(enquiries).values(data).returning();
-    
+    const [enquiry] = await db.insert(enquiries).values(validated.data).returning();
+
     // If a specific program is selected, also create a booking entry
-    if (data.program && data.program !== 'Not sure — I need guidance') {
+    if (validated.data.program && validated.data.program !== 'Not sure — I need guidance') {
       await db.insert(bookings).values({
-        name: `${data.firstName} ${data.lastName}`,
-        email: data.email,
-        phone: data.phone,
-        course: data.program,
+        name: `${validated.data.firstName} ${validated.data.lastName}`,
+        email: validated.data.email,
+        phone: validated.data.phone,
+        course: validated.data.program,
         status: 'new'
       });
     }
-    
+
     return { success: true };
   } catch (error) {
     console.error('Failed to submit enquiry:', error);
@@ -129,23 +164,29 @@ export async function submitEnrollment(data: {
   type: string;
   amount: number;
 }) {
+  // Validate input
+  const validated = EnrollmentSchema.safeParse(data);
+  if (!validated.success) {
+    return { success: false, error: 'Invalid enrollment data' };
+  }
+
   try {
-    const courseName = `${data.course} (${data.type})`;
-    
+    const courseName = `${validated.data.course} (${validated.data.type})`;
+
     await db.insert(bookings).values({
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      dob: data.dob,
-      gender: data.gender,
-      country: data.country,
-      maritalStatus: data.maritalStatus,
+      name: validated.data.name,
+      email: validated.data.email,
+      phone: validated.data.phone,
+      dob: validated.data.dob,
+      gender: validated.data.gender,
+      country: validated.data.country,
+      maritalStatus: validated.data.maritalStatus,
       course: courseName,
-      amount: data.amount,
+      amount: validated.data.amount,
       status: 'pending',
       paymentStatus: 'pending'
     });
-    
+
     revalidatePath('/dashboard/bookings');
     return { success: true };
   } catch (error) {
