@@ -57,10 +57,13 @@ export async function POST(req: Request) {
       .limit(1);
 
     let userId: number;
-    const tempPassword = crypto.randomBytes(4).toString('hex'); // e.g. "a1b2c3d4"
-    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+    let tempPassword: string | null = null;
 
     if (userRecord.length === 0) {
+      // Generate clean uppercase alphanumeric password for new user
+      tempPassword = crypto.randomBytes(6).toString('hex').toUpperCase();
+      const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
       // New user — create with hashed generated password
       const [newUser] = await db
         .insert(users)
@@ -74,13 +77,9 @@ export async function POST(req: Request) {
       userId = newUser.id;
       console.log(`[LMS Init] Created new student user: ${email}`);
     } else {
-      // Existing user — update password
+      // Existing user — DO NOT regenerate or overwrite their password (Rule 6)
       userId = userRecord[0].id;
-      await db
-        .update(users)
-        .set({ passwordHash: hashedPassword })
-        .where(eq(users.id, userId));
-      console.log(`[LMS Init] Updated password for existing student: ${email}`);
+      console.log(`[LMS Init] Retained existing password for student: ${email}`);
     }
 
     // ── 3. Create pending enrollment ──

@@ -13,15 +13,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    const userRecord = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    // Normalize input email and password
+    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedPassword = password.trim();
+
+    const userRecord = await db.select().from(users).where(eq(users.email, normalizedEmail)).limit(1);
 
     if (userRecord.length === 0) {
+      console.log(`[Login] User found: NO (Email: ${normalizedEmail})`);
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     const user = userRecord[0];
 
-    const isPasswordCorrect = await bcrypt.compare(password, user.passwordHash);
+    // Diagnostic debug logging
+    console.log('[Login Diagnostic] User found: YES');
+    console.log('[Login Diagnostic] Password in DB (Hash):', user.passwordHash);
+    console.log('[Login Diagnostic] Password submitted (Plain):', normalizedPassword);
+
+    const isPasswordCorrect = await bcrypt.compare(normalizedPassword, user.passwordHash);
+    console.log('[Login Diagnostic] Password match:', isPasswordCorrect);
 
     if (!isPasswordCorrect) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });

@@ -112,11 +112,14 @@ export async function GET(req: Request) {
           .limit(1);
 
         let userId: number;
-        const tempPassword = crypto.randomBytes(4).toString('hex'); // e.g. "a1b2c3d4"
-        const hashedPassword = await bcrypt.hash(tempPassword, 10);
-        const finalTempPassword = tempPassword;
+        let finalTempPassword: string | null = null;
 
         if (userRecord.length === 0) {
+          // Generate clean uppercase alphanumeric password for new user
+          const tempPassword = crypto.randomBytes(6).toString('hex').toUpperCase();
+          const hashedPassword = await bcrypt.hash(tempPassword, 10);
+          finalTempPassword = tempPassword;
+
           // New user — create with hashed generated password
           const [newUser] = await db
             .insert(users)
@@ -130,13 +133,9 @@ export async function GET(req: Request) {
           userId = newUser.id;
           console.log(`[Verify API] Created new student user: ${bookingRecord.email}`);
         } else {
-          // Existing user — update password to the new temp password
+          // Existing user — DO NOT regenerate or overwrite their password (Rule 6)
           userId = userRecord[0].id;
-          await db
-            .update(users)
-            .set({ passwordHash: hashedPassword })
-            .where(eq(users.id, userId));
-          console.log(`[Verify API] Updated password for existing student user: ${bookingRecord.email}`);
+          console.log(`[Verify API] Retained existing password for student user: ${bookingRecord.email}`);
         }
 
         // Fetch full user record to be safe
