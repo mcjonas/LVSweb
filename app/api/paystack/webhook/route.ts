@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { bookings, Booking } from '@/lib/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import nodemailer from 'nodemailer';
 import { escHtml } from '@/lib/email-utils';
 
 export async function POST(req: Request) {
