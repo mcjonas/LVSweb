@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState, use, useRef, useCallback } from 'react';
-import Navbar from '@/components/public/Navbar/Navbar';
-import Footer from '@/components/public/Footer/Footer';
 import Link from 'next/link';
 import './classroom.css';
 
@@ -147,37 +145,29 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
 
   const activeItem = activeRecording || activeLesson;
 
-  /* ─── Loading ─────────────────────────────────────────────────────────── */
+  /* ─── Loading ────────────────────────────────────────────────────── */
   if (!mounted || loading) return (
-    <div className="classroomRoot">
-      <Navbar />
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="spinner" />
-      </div>
+    <div className="classroomRoot" style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <div className="spinner" />
     </div>
   );
 
-  /* ─── Error ───────────────────────────────────────────────────────────── */
+  /* ─── Error ─────────────────────────────────────────────────────── */
   if (error || !course) return (
-    <div className="classroomRoot">
-      <Navbar />
-      <div style={{ flex: 1, padding: '4rem 2rem', textAlign: 'center' }}>
-        <h2 style={{ color: '#c62828' }}>{error || 'Course not found'}</h2>
-        <Link href="/learning/dashboard" style={{
-          display: 'inline-block', marginTop: '2rem', background: 'var(--deep)',
-          color: 'white', padding: '0.8rem 2rem', borderRadius: '50px', textDecoration: 'none',
-        }}>
-          Back to Dashboard
-        </Link>
-      </div>
-      <Footer />
+    <div className="classroomRoot" style={{ alignItems: 'center', justifyContent: 'center', padding: '4rem 2rem', textAlign: 'center' }}>
+      <h2 style={{ color: '#c62828' }}>{error || 'Course not found'}</h2>
+      <Link href="/learning/dashboard" style={{
+        display: 'inline-block', marginTop: '2rem', background: 'var(--deep)',
+        color: 'white', padding: '0.8rem 2rem', borderRadius: '50px', textDecoration: 'none',
+      }}>
+        Back to Dashboard
+      </Link>
     </div>
   );
 
-  /* ─── Main UI ─────────────────────────────────────────────────────────── */
+  /* ─── Main UI ─────────────────────────────────────────────────── */
   return (
     <div className="classroomRoot">
-      <Navbar />
 
       {/* ── Header ── */}
       <div className="courseHeader">
@@ -420,8 +410,6 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
           </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 }

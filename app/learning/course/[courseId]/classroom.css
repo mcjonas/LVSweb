@@ -4,6 +4,31 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* No padding-top needed: classroom uses its own header, Navbar is hidden */
+}
+
+/* ── Classroom-scoped video/iframe fix ── */
+/* globals.css sets height:auto on video/iframe globally — override inside videoWrapper */
+.videoWrapper video,
+.videoWrapper iframe {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  background: #000;
+  border: none;
+  position: absolute;
+  inset: 0;
+}
+
+/* Use position:absolute trick so aspect-ratio wrapper controls size correctly */
+.videoWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
 
 /* ── HEADER ── */
@@ -99,28 +124,11 @@
   min-width: 0;
 }
 
-.videoWrapper {
-  background: #000;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-  width: 100%;
-  aspect-ratio: 16/9;
-  position: relative;
-}
-
-.videoWrapper video,
-.videoWrapper iframe {
-  width: 100%;
-  height: 100%;
-  display: block;
-  background: #000;
-  border: none;
-}
+/* videoWrapper styles now defined at top of file (with position:absolute inner fix) */
 
 .videoPlaceholder {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -328,6 +336,11 @@
 
 /* ── MOBILE ── */
 @media (max-width: 768px) {
+  /* Hide the public Navbar inside the classroom — classroom has its own header */
+  .classroomRoot > nav {
+    display: none;
+  }
+
   .lessonToggleBtn {
     display: flex;
     align-items: center;
@@ -369,30 +382,35 @@
     font-size: 0.65rem;
   }
 
+  /* Stack layout vertically on mobile */
   .classroomBody {
-    flex-direction: column;
-    padding: 0;
-    gap: 0;
+    flex-direction: column !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    width: 100%;
+    min-height: 0;
   }
 
   .videoPanel {
-    width: 100%;
+    width: 100% !important;
+    flex: none !important;
     order: 1;
+    min-width: 0;
   }
 
-  /* Full-bleed video on mobile — no border radius, no margins */
+  /* Full-bleed video on mobile */
   .videoWrapper {
     border-radius: 0;
     box-shadow: none;
     width: 100%;
-    aspect-ratio: 16/9;
+    /* Remove max-height so aspect-ratio fully controls the height */
+    aspect-ratio: 16 / 9;
   }
 
+  /* Override the position:absolute inner elements within mobile max-height */
   .videoWrapper video,
   .videoWrapper iframe {
-    width: 100%;
-    height: 100%;
-    max-height: 45vh;
+    max-height: none; /* aspect-ratio wrapper controls height */
   }
 
   .videoPlaceholder {
@@ -525,30 +543,31 @@
 
 /* ── EXTRA SMALL SCREENS ── */
 @media (max-width: 480px) {
+  /* Also hide Navbar on extra small screens */
+  .classroomRoot > nav {
+    display: none;
+  }
+
   .courseHeader {
     padding: 0.5rem 0.6rem;
   }
 
   .courseHeaderRow {
     gap: 0.3rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 
   .courseTitle {
     font-size: 0.78rem;
-    order: 2;
-    flex-basis: 100%;
-    margin-top: 0.2rem;
-    white-space: normal;
-    -webkit-line-clamp: 2;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .backLink {
     font-size: 0.85rem;
     order: 1;
+    flex-shrink: 0;
   }
 
   .lessonToggleBtn {
@@ -556,6 +575,7 @@
     padding: 0.35rem 0.65rem;
     font-size: 0.72rem;
     margin-left: auto;
+    flex-shrink: 0;
   }
 
   .progressBar {
@@ -563,13 +583,14 @@
   }
 
   .classroomBody {
-    padding: 0;
-    gap: 0;
+    flex-direction: column !important;
+    padding: 0 !important;
+    gap: 0 !important;
   }
 
-  .videoWrapper video,
-  .videoWrapper iframe {
-    max-height: 35vh;
+  /* On small phones, let aspect-ratio control height but cap at 40vh */
+  .videoWrapper {
+    max-height: 40vh;
   }
 
   .lessonInfo {
