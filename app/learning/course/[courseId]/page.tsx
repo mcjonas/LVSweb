@@ -60,6 +60,7 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
   const selectRecording = useCallback((rec: ZoomRecording) => {
     setActiveRecording(rec);
     setActiveLesson(null);
+    setRecordingsTab(true);
     setSidebarOpen(false);
   }, []);
 
@@ -121,6 +122,7 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
         }
 
         // Populate recordings even if course fetch was the primary
+        // (also ensure tab switches to recordings if they exist and weren't caught above)
         if (recData.success && recData.recordings?.length > 0) {
           setRecordings(recData.recordings);
         }
@@ -308,6 +310,7 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
             <h3>Course Content</h3>
             {recordings.length > 0 && (
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                {/* Lessons tab: click → recordingsTab = false → renders lessons list */}
                 <button
                   onClick={() => setRecordingsTab(false)}
                   style={{
@@ -319,6 +322,7 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
                 >
                   📚 Lessons ({totalLessons})
                 </button>
+                {/* Recordings tab: click → recordingsTab = true → renders recordings list */}
                 <button
                   onClick={() => setRecordingsTab(true)}
                   style={{
@@ -336,7 +340,7 @@ export default function CourseClassroom({ params }: { params: Promise<{ courseId
 
           <div className="sidebarScroll">
 
-            {/* ── Recordings Tab ── */}
+            {/* Show Recordings list when recordingsTab=true, Lessons list when false */}
             {recordingsTab && recordings.length > 0 ? (
               <div className="moduleGroup">
                 <div className="moduleTitle">Zoom Cloud Recordings</div>
