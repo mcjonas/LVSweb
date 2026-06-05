@@ -7,7 +7,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.2rem 4rem;
+  padding: 0 4rem;
+  height: 68px;
   background: rgba(245, 240, 255, 0.88);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(123, 63, 160, 0.15);
@@ -64,7 +65,8 @@
 
 @media (max-width: 900px) {
   .nav {
-    padding: 1rem 1.5rem;
+    padding: 0 1.5rem;
+    height: 60px;
   }
   .links {
     display: none;

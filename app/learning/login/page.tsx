@@ -38,11 +38,11 @@ function StudentLoginContent() {
   };
 
   return (
-    <div style={{ background: '#f5f5f5', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: '#f5f5f5', minHeight: '100vh', display: 'flex', flexDirection: 'column', paddingTop: '68px' }}>
       <Navbar />
       
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4rem 2rem' }}>
-        <div style={{ background: '#fff', padding: '3rem', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', maxWidth: '450px', width: '100%' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(2rem, 5vw, 4rem) clamp(1rem, 4vw, 2rem)' }}>
+        <div style={{ background: '#fff', padding: 'clamp(1.5rem, 5vw, 3rem)', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', maxWidth: '450px', width: '100%' }}>
           <h1 style={{ color: 'var(--deep)', marginBottom: '0.5rem', textAlign: 'center' }}>Student Login</h1>
           <p style={{ color: 'var(--muted)', marginBottom: '2rem', textAlign: 'center' }}>Welcome back to your learning dashboard.</p>
 
