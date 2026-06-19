@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getCourses } from '@/lib/actions';
 import Link from 'next/link';
 import styles from './courses.module.css';

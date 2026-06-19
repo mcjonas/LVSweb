@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getStats, getEnquiries, getBookings } from '@/lib/actions';
 import styles from './overview.module.css';
 

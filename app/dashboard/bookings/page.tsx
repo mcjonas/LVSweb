@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getBookings } from '@/lib/actions';
 import styles from './bookings.module.css';
 import BookingsClient from './BookingsClient';
