@@ -119,8 +119,7 @@ function FormContent({ courses }: { courses: Course[] }) {
     courseAmount = selectedCourseDetails?.priceSingleGHS || selectedCourseDetails?.priceCoupleGHS || 0;
   }
 
-  const registrationFee = isSpecial ? 0 : 200;
-  const totalAmount = courseAmount > 0 ? courseAmount + registrationFee : 0;
+  const totalAmount = courseAmount;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -723,7 +722,6 @@ function FormContent({ courses }: { courses: Course[] }) {
             {totalAmount > 0 ? `GHS ${totalAmount.toLocaleString()}` : 'TBD'}
           </div>
           <p style={{fontSize: '0.85rem', color: 'var(--muted)', marginTop: '0.5rem', lineHeight: '1.4'}}>
-            *This total amount includes your course fee (GHS {courseAmount.toLocaleString()}) plus a one-time <strong>GHS 200 registration form fee</strong>.<br/>
             You will be redirected to Paystack to complete your payment securely.
           </p>
         </div>
