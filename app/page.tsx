@@ -6,7 +6,7 @@ import HowItWorks from '@/components/public/HowItWorks/HowItWorks';
 import Founder from '@/components/public/Founder/Founder';
 import Testimonials from '@/components/public/Testimonials/Testimonials';
 import Pricing from '@/components/public/Pricing/Pricing';
-import Contact from '@/components/public/Contact/Contact';
+import CountryManagers from '@/components/public/CountryManagers/CountryManagers';
 import Books from '@/components/public/Books/Books';
 import Enquiries from '@/components/public/Enquiries/Enquiries';
 import SocialBar from '@/components/public/SocialBar/SocialBar';
@@ -42,7 +42,7 @@ export default async function Home() {
       <Founder />
       <Testimonials />
       <Pricing />
-      <Contact programs={programs} />
+      <CountryManagers />
       <Books />
       <Enquiries />
       <SocialBar />
