@@ -10,6 +10,8 @@ const FALLBACK_COURSES = [
   { num: '04', title: 'Legal Advice on Marriage & Divorce', lang: 'Asesoramiento legal sobre matrimonio y divorcio', duration: '3 Months', fees: [{ type: 'Single', ghs: 'GHS 1,500', usd: '$137' }, { type: 'Couple', ghs: 'GHS 2,500', usd: '$228' }] },
   { num: '05', title: 'Crisis Management in Marriage', lang: 'Gestión de crisis en el matrimonio / Gestion des crises conjugales', duration: '3 Months', fees: [{ type: 'Single', ghs: 'GHS 1,300', usd: '$118' }, { type: 'Couple', ghs: 'GHS 2,000', usd: '$182' }] },
   { num: '06', title: 'Thriving Beyond Divorce', lang: "Prosperando después del divorcio / S'épanouir après le divorce", duration: '3 Months', fees: [{ type: 'Fee', ghs: 'GHS 2,000', usd: '$182' }] },
+  { num: '07', title: 'Single and Searching', lang: 'Soltero y buscando / Célibataire et à la recherche', duration: '3 Months', fees: [{ type: 'Fee', ghs: 'GHS 1,000', usd: '$90' }] },
+  { num: '08', title: 'Dating Well', lang: 'Tener citas exitosas / Rencontres réussies', duration: '3 Months', fees: [{ type: 'Fee', ghs: 'GHS 1,000', usd: '$90' }] },
 ];
 
 export default async function Pricing() {

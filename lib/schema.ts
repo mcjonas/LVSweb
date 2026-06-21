@@ -186,7 +186,31 @@ export const recordingAccessLogs = pgTable('recording_access_logs', {
   timestamp:   timestamp('timestamp').defaultNow(),
 });
 
+// ==========================================
+// SECURITY LOGGING
+// ==========================================
+
+/**
+ * security_logs — append-only audit trail for security-relevant events.
+ * Written by lib/security-logger.ts. Never deleted, never updated.
+ *
+ * Events: admin_login_success | admin_login_failed | admin_logout |
+ *         rate_limited | student_login_failed | student_login_success |
+ *         payment_course_not_found | payment_tamper | admin_course_deleted | etc.
+ */
+export const securityLogs = pgTable('security_logs', {
+  id:        serial('id').primaryKey(),
+  event:     varchar('event',     { length: 100 }).notNull(),
+  severity:  varchar('severity',  { length: 20  }).notNull(), // 'info' | 'warning' | 'critical'
+  ip:        varchar('ip',        { length: 64  }),
+  userAgent: text('user_agent'),
+  details:   text('details'),   // JSON string with extra context
+  userId:    integer('user_id'), // null for unauthenticated events
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
 // ── Type exports ──────────────────────────────────────────────────────────────
+
 export type Enquiry            = typeof enquiries.$inferSelect;
 export type NewEnquiry         = typeof enquiries.$inferInsert;
 export type Testimonial        = typeof testimonials.$inferSelect;
@@ -201,3 +225,4 @@ export type Progress           = typeof progress.$inferSelect;
 export type Recording          = typeof recordings.$inferSelect;
 export type WebhookEvent       = typeof webhookEvents.$inferSelect;
 export type RecordingAccessLog = typeof recordingAccessLogs.$inferSelect;
+export type SecurityLog        = typeof securityLogs.$inferSelect;

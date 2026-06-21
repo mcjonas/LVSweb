@@ -4,6 +4,11 @@ import { users } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { logSecurityEvent } from '@/lib/security-logger';
+
+function getIP(req: Request): string {
+  return (req.headers as any).get?.('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown';
+}
 
 export async function POST(req: Request) {
   try {
@@ -20,21 +25,26 @@ export async function POST(req: Request) {
     const userRecord = await db.select().from(users).where(eq(users.email, normalizedEmail)).limit(1);
 
     if (userRecord.length === 0) {
-      console.log(`[Login] User found: NO (Email: ${normalizedEmail})`);
+      await logSecurityEvent({
+        event: 'student_login_failed',
+        severity: 'warning',
+        ip: getIP(req),
+        details: { reason: 'email_not_found', email: normalizedEmail },
+      });
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     const user = userRecord[0];
 
-    // Diagnostic debug logging
-    console.log('[Login Diagnostic] User found: YES');
-    console.log('[Login Diagnostic] Password in DB (Hash):', user.passwordHash);
-    console.log('[Login Diagnostic] Password submitted (Plain):', normalizedPassword);
-
     const isPasswordCorrect = await bcrypt.compare(normalizedPassword, user.passwordHash);
-    console.log('[Login Diagnostic] Password match:', isPasswordCorrect);
 
     if (!isPasswordCorrect) {
+      await logSecurityEvent({
+        event: 'student_login_failed',
+        severity: 'warning',
+        ip: getIP(req),
+        details: { reason: 'wrong_password', email: normalizedEmail },
+      });
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
@@ -52,6 +62,15 @@ export async function POST(req: Request) {
     const token = jwt.sign(tokenPayload, accessSecret, { expiresIn: '7d' });
 
     const response = NextResponse.json({ success: true, token });
+
+    // ── Security log: successful student login ────────────────────────────────
+    await logSecurityEvent({
+      event: 'student_login_success',
+      severity: 'info',
+      ip: getIP(req),
+      userId: user.id,
+      details: { email: user.email },
+    });
 
     // Long-lived refresh token in httpOnly cookie (30 days) — requires REFRESH_TOKEN_SECRET
     if (refreshSecret) {

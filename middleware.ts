@@ -2,6 +2,31 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifySessionToken } from '@/lib/session';
 
+// ── Internal secret used to authenticate the security-log bridge ─────────────
+// Must match INTERNAL_API_SECRET (or SESSION_SECRET fallback) in the bridge route.
+const INTERNAL_SECRET =
+  process.env.INTERNAL_API_SECRET ??
+  process.env.SESSION_SECRET ??
+  'lvs-internal';
+
+/** Fire-and-forget: posts a security event to the Node.js API bridge.
+ *  Never throws or delays the caller. */
+function logRateLimitEvent(ip: string, path: string, origin: string): void {
+  fetch(`${origin}/api/internal/security-log`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-internal-secret': INTERNAL_SECRET,
+    },
+    body: JSON.stringify({
+      event:    'rate_limited',
+      severity: 'warning',
+      ip,
+      details:  { path },
+    }),
+  }).catch(() => {/* swallow — never block the 429 response */});
+}
+
 // ── Rate limiting ────────────────────────────────────────────────────────────
 //
 // Uses Upstash Redis when UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN
@@ -96,6 +121,10 @@ export async function middleware(request: NextRequest) {
 
     const { limited, retryAfter } = await checkRateLimit(ip);
     if (limited) {
+      // Log the blocked IP (fire-and-forget, doesn't delay the 429)
+      const origin = request.nextUrl.origin;
+      logRateLimitEvent(ip, path, origin);
+
       return new NextResponse('Too Many Requests', {
         status: 429,
         headers: {

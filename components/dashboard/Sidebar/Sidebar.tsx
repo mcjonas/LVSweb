@@ -5,14 +5,16 @@ import { usePathname } from 'next/navigation';
 import styles from './Sidebar.module.css';
 
 const NAV = [
-  { href: '/dashboard', label: 'Overview', icon: '📊' },
-  { href: '/dashboard/enquiries', label: 'Enquiries', icon: '📬' },
-  { href: '/dashboard/bookings', label: 'Bookings', icon: '📅' },
-  { href: '/dashboard/courses', label: 'Courses', icon: '📚' },
-  { href: '/dashboard/videos', label: 'Videos', icon: '🎥' },
-  { href: '/dashboard/recordings', label: 'Recordings', icon: '🎬' },
+  { href: '/dashboard',            label: 'Overview',     icon: '📊' },
+  { href: '/dashboard/enquiries',  label: 'Enquiries',    icon: '📬' },
+  { href: '/dashboard/bookings',   label: 'Bookings',     icon: '📅' },
+  { href: '/dashboard/courses',    label: 'Courses',      icon: '📚' },
+  { href: '/dashboard/videos',     label: 'Videos',       icon: '🎥' },
+  { href: '/dashboard/recordings', label: 'Recordings',   icon: '🎬' },
   { href: '/dashboard/testimonials', label: 'Testimonials', icon: '💬' },
+  { href: '/dashboard/security',   label: 'Security Logs', icon: '🔒' },
 ];
+
 
 export default function Sidebar() {
   const path = usePathname();

@@ -1,0 +1,169 @@
+.container {
+  padding: 2rem;
+  max-width: 1200px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 0.3rem;
+}
+
+.header p {
+  color: #666;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Summary badges */
+.summary {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  flex: 1;
+  min-width: 130px;
+  background: #fff;
+  border: 2px solid #eee;
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.badgeCount {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.badgeLabel {
+  font-size: 0.78rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Table */
+.tableWrap {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table thead tr {
+  background: #f8f9fa;
+  border-bottom: 2px solid #eee;
+}
+
+.table th {
+  padding: 0.9rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #444;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.15s;
+}
+
+.table tbody tr:hover { background: #fafafa; }
+.table tbody tr:last-child { border-bottom: none; }
+
+/* Row tint by severity */
+.table tbody tr:has(.sevBadge[style*="e74c3c"]) { background: #fff8f8; }
+.table tbody tr:has(.sevBadge[style*="f39c12"]) { background: #fffdf5; }
+
+.table td {
+  padding: 0.85rem 1rem;
+  vertical-align: middle;
+  color: #333;
+}
+
+/* Severity badge pill */
+.sevBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.eventCell {
+  font-weight: 500;
+  color: #1a1a2e;
+}
+
+.ipCell {
+  font-family: monospace;
+  font-size: 0.82rem;
+  color: #555;
+}
+
+.detailsCell {
+  max-width: 280px;
+}
+
+.detailsCode {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #555;
+  background: #f5f5f5;
+  padding: 3px 6px;
+  border-radius: 4px;
+  word-break: break-all;
+  display: block;
+}
+
+.timeCell {
+  white-space: nowrap;
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.empty {
+  background: #fff;
+  border-radius: 12px;
+  padding: 3rem;
+  text-align: center;
+  color: #888;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+}
+
+@media (max-width: 768px) {
+  .container { padding: 1rem; }
+  .badge { min-width: 100px; }
+  .table th, .table td { padding: 0.7rem 0.6rem; font-size: 0.8rem; }
+  .detailsCell { max-width: 160px; }
+}

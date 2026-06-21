@@ -5,6 +5,11 @@ import { revalidatePath } from 'next/cache';
 import { and, ilike, eq } from 'drizzle-orm';
 import nodemailer from 'nodemailer';
 import { escHtml } from '@/lib/email-utils';
+import { logSecurityEvent } from '@/lib/security-logger';
+
+function getIP(req: Request): string {
+  return (req.headers as any).get?.('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown';
+}
 
 // Booking type → price field mapping
 type CourseType = 'Single' | 'Couple';
@@ -51,6 +56,12 @@ export async function POST(req: Request) {
         .limit(1);
 
       if (courseRecord.length === 0) {
+        await logSecurityEvent({
+          event: 'payment_course_not_found',
+          severity: 'warning',
+          ip: getIP(req),
+          details: { course, email: data.email, name: data.name },
+        });
         return NextResponse.json({ error: 'Course not found' }, { status: 404 });
       }
 
