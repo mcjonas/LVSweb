@@ -29,7 +29,7 @@ export default function NewCoursePage() {
     if (result.success) {
       window.location.href = '/dashboard/courses';
     } else {
-      alert('Failed to add course. Please try again.');
+      alert(`Failed to add course: ${result.error || 'Please try again.'}`);
       setLoading(false);
     }
   }

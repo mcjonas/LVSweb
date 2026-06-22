@@ -41,12 +41,22 @@ const EnrollmentSchema = z.object({
 });
 
 export async function getCourses() {
-  return db.select().from(courses).orderBy(desc(courses.createdAt));
+  try {
+    return await db.select().from(courses).orderBy(desc(courses.createdAt));
+  } catch (err) {
+    console.error('[getCourses] Database error — returning empty array. Cause:', err);
+    return [];
+  }
 }
 
 export async function getCourseById(id: number) {
-  const [course] = await db.select().from(courses).where(eq(courses.id, id));
-  return course;
+  try {
+    const [course] = await db.select().from(courses).where(eq(courses.id, id));
+    return course;
+  } catch (err) {
+    console.error('[getCourseById] Database error:', err);
+    return undefined;
+  }
 }
 
 export async function addCourse(data: {
@@ -64,7 +74,9 @@ export async function addCourse(data: {
   // Validate input
   const validated = CourseSchema.safeParse(data);
   if (!validated.success) {
-    return { success: false, error: 'Invalid input data' };
+    const errorMsg = validated.error.issues.map(err => `${err.path.join('.')}: ${err.message}`).join(', ');
+    console.error('Validation failed for addCourse:', errorMsg);
+    return { success: false, error: `Invalid input: ${errorMsg}` };
   }
 
   try {
@@ -84,7 +96,9 @@ export async function updateCourse(id: number, data: Partial<typeof courses.$inf
   // Validate the fields being updated (partial)
   const validated = CourseSchema.partial().safeParse(data);
   if (!validated.success) {
-    return { success: false, error: 'Invalid update data' };
+    const errorMsg = validated.error.issues.map(err => `${err.path.join('.')}: ${err.message}`).join(', ');
+    console.error('Validation failed for updateCourse:', errorMsg);
+    return { success: false, error: `Invalid update: ${errorMsg}` };
   }
 
   try {
@@ -264,16 +278,22 @@ export async function deleteTestimonial(id: number) {
 
 export async function getStats() {
   await checkAuth();
-  const allEnquiries = await db.select().from(enquiries);
-  const allTestimonials = await db.select().from(testimonials);
-  const allCourses = await db.select().from(courses);
-  const allBookings = await db.select().from(bookings);
-  
-  return {
-    totalEnquiries: allEnquiries.length,
-    newEnquiries: allEnquiries.filter(e => e.status === 'new').length,
-    totalCourses: allCourses.length,
-    pendingBookings: allBookings.filter(b => b.status === 'new').length,
-    totalTestimonials: allTestimonials.length,
-  };
+  try {
+    const [allEnquiries, allTestimonials, allCourses, allBookings] = await Promise.all([
+      db.select().from(enquiries),
+      db.select().from(testimonials),
+      db.select().from(courses),
+      db.select().from(bookings),
+    ]);
+    return {
+      totalEnquiries:   allEnquiries.length,
+      newEnquiries:     allEnquiries.filter(e => e.status === 'new').length,
+      totalCourses:     allCourses.length,
+      pendingBookings:  allBookings.filter(b => b.status === 'new').length,
+      totalTestimonials: allTestimonials.length,
+    };
+  } catch (err) {
+    console.error('[getStats] Database error — returning zero stats. Cause:', err);
+    return { totalEnquiries: 0, newEnquiries: 0, totalCourses: 0, pendingBookings: 0, totalTestimonials: 0 };
+  }
 }

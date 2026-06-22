@@ -47,7 +47,7 @@ export default function EditCoursePage() {
     if (result.success) {
       window.location.href = '/dashboard/courses';
     } else {
-      alert('Failed to update course.');
+      alert(`Failed to update course: ${result.error || 'Please try again.'}`);
       setLoading(false);
     }
   }
