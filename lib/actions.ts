@@ -83,6 +83,8 @@ export async function addCourse(data: {
     await db.insert(courses).values(validated.data);
     revalidatePath('/');
     revalidatePath('/dashboard/courses');
+    revalidatePath('/enroll');
+    revalidatePath('/learning/enroll');
     return { success: true };
   } catch (error) {
     console.error('Failed to add course:', error);
@@ -105,6 +107,8 @@ export async function updateCourse(id: number, data: Partial<typeof courses.$inf
     await db.update(courses).set(validated.data).where(eq(courses.id, id));
     revalidatePath('/');
     revalidatePath('/dashboard/courses');
+    revalidatePath('/enroll');
+    revalidatePath('/learning/enroll');
     return { success: true };
   } catch (error) {
     console.error('Failed to update course:', error);
@@ -118,6 +122,8 @@ export async function deleteCourse(id: number) {
     await db.delete(courses).where(eq(courses.id, id));
     revalidatePath('/');
     revalidatePath('/dashboard/courses');
+    revalidatePath('/enroll');
+    revalidatePath('/learning/enroll');
     return { success: true };
   } catch (error) {
     console.error('Failed to delete course:', error);

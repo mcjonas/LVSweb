@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getCourses } from '@/lib/actions';
 import Navbar from '@/components/public/Navbar/Navbar';
 import Footer from '@/components/public/Footer/Footer';

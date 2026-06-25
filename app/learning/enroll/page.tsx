@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import LearningEnrollForm from './LearningEnrollForm';
 import { getCourses } from '@/lib/actions';
 
