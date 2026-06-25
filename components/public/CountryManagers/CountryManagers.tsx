@@ -27,7 +27,7 @@ const MANAGERS = [
   },
   {
     // 3rd — IMG-20260616-WA0002.jpg
-    name: 'Pastor Admiro',
+    name: 'Pastor Admiro Sitoe',
     role: 'Country Manager',
     flagCode: 'mz',
     country: 'Mozambique',
