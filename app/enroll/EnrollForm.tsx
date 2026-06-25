@@ -26,11 +26,11 @@ const SAT_SLOTS = [
 ];
 
 const BOOKING_OPTIONS = [
-  { label: 'Walk-In Session (Solo)', val: 'Walk-In Session (Solo)', priceSingleGHS: 750, priceCoupleGHS: 750, isSpecial: true, details: 'In-person / Solo @ Adenta' },
-  { label: 'Walk-In Session (Joint)', val: 'Walk-In Session (Joint)', priceSingleGHS: 1200, priceCoupleGHS: 1200, isSpecial: true, details: 'In-person / Couple @ Adenta' },
+  { label: 'Walk-In Session (Solo)', val: 'Walk-In Session (Solo)', priceSingleGHS: 500, priceCoupleGHS: 500, isSpecial: true, details: 'In-person / Solo @ Adenta' },
+  { label: 'Walk-In Session (Joint)', val: 'Walk-In Session (Joint)', priceSingleGHS: 850, priceCoupleGHS: 850, isSpecial: true, details: 'In-person / Couple @ Adenta' },
   { label: 'Telephone Session', val: 'Telephone Session', priceSingleGHS: 200, priceCoupleGHS: 200, isSpecial: true, details: 'Local / Regular voice call' },
-  { label: 'Online WhatsApp Call', val: 'Online WhatsApp Call', priceSingleGHS: 450, priceCoupleGHS: 450, isSpecial: true, details: 'Voice & Video on WhatsApp' },
-  { label: 'Virtual Audio Session', val: 'Virtual Audio Session', priceSingleGHS: 450, priceCoupleGHS: 450, isSpecial: true, details: 'Google Meet or Zoom audio' },
+  { label: 'Online WhatsApp Call', val: 'Online WhatsApp Call', priceSingleGHS: 350, priceCoupleGHS: 350, isSpecial: true, details: 'Voice & Video on WhatsApp' },
+  { label: 'Virtual Audio Session', val: 'Virtual Audio Session', priceSingleGHS: 400, priceCoupleGHS: 400, isSpecial: true, details: 'Google Meet or Zoom audio' },
   { label: 'Virtual Video Session', val: 'Virtual Video Session', priceSingleGHS: 600, priceCoupleGHS: 600, isSpecial: true, details: 'Google Meet or Zoom video' },
 ];
 

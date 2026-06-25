@@ -4,7 +4,7 @@ import styles from './HowItWorks.module.css';
 const BOOKINGS = [
   {
     title: 'Walk-In Session (Solo)',
-    rate: 'GHS 750',
+    rate: 'GHS 500',
     duration: '1 Hour',
     channel: 'In-person / Solo',
     venue: "Love Vibe Studio's Office - Adenta",
@@ -12,7 +12,7 @@ const BOOKINGS = [
   },
   {
     title: 'Walk-In Session (Joint)',
-    rate: 'GHS 1,200',
+    rate: 'GHS 850',
     duration: '1 Hour 30 Mins',
     channel: 'In-person / Couple',
     venue: "Love Vibe Studio's Office - Adenta",
@@ -28,7 +28,7 @@ const BOOKINGS = [
   },
   {
     title: 'Online Call (WhatsApp)',
-    rate: 'GHS 450',
+    rate: 'GHS 350',
     duration: '1 Hour',
     channel: 'WhatsApp Call',
     venue: 'Voice & Video Format',
@@ -36,7 +36,7 @@ const BOOKINGS = [
   },
   {
     title: 'Virtual Audio Session',
-    rate: 'GHS 450',
+    rate: 'GHS 400',
     duration: '1 Hour',
     channel: 'Google Meet / Zoom',
     venue: 'Audio Session',

@@ -17,7 +17,7 @@ const MANAGERS = [
   },
   {
     // 2nd — IMG-20260617-WA0016.jpg
-    name: 'Mrs. Phoebe Okine',
+    name: 'Mrs. Phoebe Okai-Tutu',
     role: 'Country Manager',
     flagCode: 'gb',
     country: 'United Kingdom',
